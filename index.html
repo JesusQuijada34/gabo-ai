@@ -2,123 +2,174 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Influent Gabo AI</title>
+  <title>Influent Gabo AI Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     body {
       margin: 0;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      animation: bgShift 10s ease infinite;
-      color: #fff;
       font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #050a1f, #092037, #0a394a);
+      color: white;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
     }
-    @keyframes bgShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+
+    #popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #ff4444;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      display: none;
+      font-weight: bold;
     }
 
     #chat {
       flex: 1;
-      padding: 1rem;
       overflow-y: auto;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
     }
+
     .bubble {
-      max-width: 75%;
+      max-width: 70%;
       margin: 0.5rem;
       padding: 1rem;
-      border-radius: 1rem;
-      background: rgba(0, 255, 255, 0.1);
-      border: 2px solid;
-      border-image: linear-gradient(45deg, #00ffff, #0055ff) 1;
-      animation: pulse 2s infinite;
-      transition: all 0.2s ease;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #001933, #004466);
+      border: 2px solid transparent;
+      border-image: linear-gradient(90deg, #00ccff, #3366ff) 1;
+      animation: fade 0.3s ease;
+      position: relative;
+      white-space: pre-wrap;
     }
-    @keyframes pulse {
-      0%, 100% { border-image-slice: 1; opacity: 1; }
-      50% { opacity: 0.7; }
+
+    .user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #0044cc, #00ccff);
+      border-image: linear-gradient(90deg, #00ccff, #66ccff) 1;
+    }
+
+    .gabo {
+      align-self: flex-start;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .checks {
+      display: flex;
+      align-items: center;
+      gap: 3px;
     }
 
     #controls {
       display: flex;
       padding: 1rem;
-      backdrop-filter: blur(10px);
-      background: rgba(255,255,255,0.05);
+      background: #000c;
+      backdrop-filter: blur(5px);
     }
 
     #input {
       flex: 1;
-      padding: 0.8rem;
-      border-radius: 10px;
+      padding: 0.6rem;
+      border-radius: 12px;
       border: none;
-      background: #111;
-      color: #fff;
       font-size: 1rem;
-      border: 2px solid #00ffff;
-      outline: none;
+      background: #111;
+      color: white;
+      border: 2px solid #00ccff;
     }
 
     #send {
-      margin-left: 1rem;
-      background: linear-gradient(45deg, #00ffff, #0055ff);
-      color: black;
+      margin-left: 0.5rem;
+      padding: 0.6rem 1rem;
       font-weight: bold;
-      padding: 0.8rem 1.2rem;
-      border-radius: 10px;
+      background: linear-gradient(45deg, #00ffff, #0066ff);
+      color: black;
       border: none;
+      border-radius: 12px;
       cursor: pointer;
       box-shadow: 0 0 10px #00ffff;
     }
 
-    .typing {
-      border-right: 2px solid #fff;
-      animation: blink 0.7s infinite;
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes blink {
-      0% { border-color: transparent; }
-      50% { border-color: white; }
-      100% { border-color: transparent; }
+    svg {
+      width: 16px;
+      height: 16px;
     }
   </style>
 </head>
 <body>
+  <div id="popup">⚠️ Sin conexión a internet</div>
   <div id="chat"></div>
   <div id="controls">
-    <input type="text" id="input" placeholder="Escribe aquí..." />
+    <input type="text" id="input" placeholder="Escribe tu mensaje..." />
     <button id="send">Enviar</button>
   </div>
   <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
 
   <script>
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("input");
-    const send = document.getElementById("send");
-    const blup = document.getElementById("blup");
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
+    const popup = document.getElementById('popup');
+    const blup = document.getElementById('blup');
 
-    function simulateTyping(html, role = 'gabo') {
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
+    function getTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function createChecks(state) {
+      return `
+        <div class="checks">
+          ${state.sent ? singleCheck() : ''}
+          ${state.received ? doubleCheck(false) : ''}
+          ${state.read ? doubleCheck(true) : ''}
+        </div>
+      `;
+    }
+
+    function singleCheck() {
+      return `<svg viewBox="0 0 24 24"><path fill="#ccc" d="M9 12l2 2 4-4"/></svg>`;
+    }
+
+    function doubleCheck(read) {
+      const color = read ? '#00ccff' : '#ccc';
+      return `
+        <svg viewBox="0 0 24 24"><path fill="${color}" d="M8 12l2 2 4-4"/></svg>
+        <svg viewBox="0 0 24 24"><path fill="${color}" d="M12 12l2 2 4-4"/></svg>
+      `;
+    }
+
+    function addBubble(text, role = 'gabo', state = { sent: true, received: true, read: false }) {
+      const bubble = document.createElement('div');
+      bubble.className = `bubble ${role}`;
+      bubble.innerHTML = marked.parse(text.replace(/DeepSeek/gi, 'Gabo'));
+
+      const footer = document.createElement('div');
+      footer.className = 'footer';
+      footer.innerHTML = `<span>${getTime()}</span>${role === 'user' ? createChecks(state) : ''}`;
+      bubble.appendChild(footer);
+
       chat.appendChild(bubble);
-      let i = 0;
-
-      function writeChar() {
-        bubble.innerHTML = marked.parse(html.slice(0, i)) + '<span class="typing"></span>';
-        chat.scrollTop = chat.scrollHeight;
-        if (i < html.length) {
-          i++;
-          setTimeout(writeChar, 15);
-        } else {
-          bubble.innerHTML = marked.parse(html);
-          blup.play();
-        }
-      }
-      writeChar();
+      chat.scrollTop = chat.scrollHeight;
     }
 
     send.onclick = async () => {
@@ -128,12 +179,7 @@
       send.disabled = true;
       send.textContent = 'Pensando...';
 
-      const userBubble = document.createElement("div");
-      userBubble.className = "bubble";
-      userBubble.style.alignSelf = "flex-start";
-      userBubble.textContent = msg;
-      chat.appendChild(userBubble);
-      chat.scrollTop = chat.scrollHeight;
+      addBubble(msg, 'user', { sent: true, received: false, read: false });
 
       try {
         const res = await fetch('https://api.together.xyz/v1/chat/completions', {
@@ -147,12 +193,16 @@
             messages: [{ role: 'user', content: msg }]
           })
         });
+
+        if (!res.ok) throw new Error('Sin conexión');
         const data = await res.json();
-        let respuesta = data.choices[0].message.content || '';
-        respuesta = respuesta.replace(/DeepSeek/gi, 'Gabo');
-        simulateTyping(respuesta);
-      } catch (err) {
-        simulateTyping('⚠️ Error: ' + err.message);
+        let texto = data.choices[0].message.content || '';
+        blup.play();
+        addBubble(texto, 'gabo');
+      } catch (e) {
+        popup.style.display = 'block';
+        setTimeout(() => (popup.style.display = 'none'), 3000);
+        addBubble('No se pudo entregar el mensaje', 'user', { sent: true });
       }
 
       send.disabled = false;
