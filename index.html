@@ -2,93 +2,124 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Influent Gabo AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     body {
       margin: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      animation: bgShift 10s ease infinite;
+      color: #fff;
       font-family: Arial, sans-serif;
-      background: #1f1f1f;
-      color: white;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
     #chat {
       flex: 1;
-      overflow-y: auto;
       padding: 1rem;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
     .bubble {
-      max-width: 70%;
+      max-width: 75%;
       margin: 0.5rem;
       padding: 1rem;
       border-radius: 1rem;
-      position: relative;
-      animation: fadeIn 0.3s ease;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      background: rgba(0, 255, 255, 0.1);
+      border: 2px solid;
+      border-image: linear-gradient(45deg, #00ffff, #0055ff) 1;
+      animation: pulse 2s infinite;
+      transition: all 0.2s ease;
     }
-    .user {
-      align-self: flex-start;
-      background: #444;
+    @keyframes pulse {
+      0%, 100% { border-image-slice: 1; opacity: 1; }
+      50% { opacity: 0.7; }
     }
-    .gabo {
-      align-self: flex-end;
-      background: #0077cc;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+
     #controls {
       display: flex;
       padding: 1rem;
-      background: #000;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.05);
     }
+
     #input {
       flex: 1;
-      padding: 0.5rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: none;
+      background: #111;
+      color: #fff;
       font-size: 1rem;
-      border-radius: 5px;
-      border: none;
+      border: 2px solid #00ffff;
+      outline: none;
     }
+
     #send {
-      margin-left: 0.5rem;
-      padding: 0.5rem 1rem;
+      margin-left: 1rem;
+      background: linear-gradient(45deg, #00ffff, #0055ff);
+      color: black;
       font-weight: bold;
-      background: #0066aa;
-      color: white;
+      padding: 0.8rem 1.2rem;
+      border-radius: 10px;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
+      box-shadow: 0 0 10px #00ffff;
     }
-    #copy-btn {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      font-size: 0.8rem;
-      background: rgba(255,255,255,0.2);
-      padding: 2px 6px;
-      border-radius: 3px;
-      cursor: pointer;
+
+    .typing {
+      border-right: 2px solid #fff;
+      animation: blink 0.7s infinite;
+    }
+
+    @keyframes blink {
+      0% { border-color: transparent; }
+      50% { border-color: white; }
+      100% { border-color: transparent; }
     }
   </style>
 </head>
 <body>
   <div id="chat"></div>
   <div id="controls">
-    <input type="text" id="input" placeholder="Escribe algo..." />
+    <input type="text" id="input" placeholder="Escribe aquí..." />
     <button id="send">Enviar</button>
   </div>
   <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+
   <script>
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('input');
-    const send = document.getElementById('send');
-    const blup = document.getElementById('blup');
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+    const blup = document.getElementById("blup");
+
+    function simulateTyping(html, role = 'gabo') {
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      chat.appendChild(bubble);
+      let i = 0;
+
+      function writeChar() {
+        bubble.innerHTML = marked.parse(html.slice(0, i)) + '<span class="typing"></span>';
+        chat.scrollTop = chat.scrollHeight;
+        if (i < html.length) {
+          i++;
+          setTimeout(writeChar, 15);
+        } else {
+          bubble.innerHTML = marked.parse(html);
+          blup.play();
+        }
+      }
+      writeChar();
+    }
 
     send.onclick = async () => {
       const msg = input.value.trim();
@@ -96,12 +127,16 @@
       input.value = '';
       send.disabled = true;
       send.textContent = 'Pensando...';
-      send.style.background = '#888';
 
-      addBubble(msg, 'user');
+      const userBubble = document.createElement("div");
+      userBubble.className = "bubble";
+      userBubble.style.alignSelf = "flex-start";
+      userBubble.textContent = msg;
+      chat.appendChild(userBubble);
+      chat.scrollTop = chat.scrollHeight;
 
       try {
-        const response = await fetch('https://api.together.xyz/v1/chat/completions', {
+        const res = await fetch('https://api.together.xyz/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer 97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210',
@@ -112,41 +147,17 @@
             messages: [{ role: 'user', content: msg }]
           })
         });
-        const data = await response.json();
-        let texto = data.choices[0].message.content || '';
-        texto = texto.replace(/DeepSeek/gi, 'Gabo');
-
-        addBubble(texto, 'gabo');
-        blup.play();
+        const data = await res.json();
+        let respuesta = data.choices[0].message.content || '';
+        respuesta = respuesta.replace(/DeepSeek/gi, 'Gabo');
+        simulateTyping(respuesta);
       } catch (err) {
-        addBubble('⚠️ Error: ' + err.message, 'gabo');
+        simulateTyping('⚠️ Error: ' + err.message);
       }
 
       send.disabled = false;
       send.textContent = 'Enviar';
-      send.style.background = '#0066aa';
     };
-
-    function addBubble(text, role) {
-      const bubble = document.createElement('div');
-      bubble.className = `bubble ${role}`;
-      bubble.textContent = text;
-
-      if (/```[\s\S]+```/.test(text)) {
-        const match = text.match(/```(\w*)\n([\s\S]*?)```/);
-        if (match) {
-          bubble.textContent = match[1] ? `[${match[1]} CODE]\n` + match[2] : match[2];
-          const copy = document.createElement('div');
-          copy.id = 'copy-btn';
-          copy.textContent = '📋';
-          copy.onclick = () => navigator.clipboard.writeText(match[2]);
-          bubble.appendChild(copy);
-        }
-      }
-
-      chat.appendChild(bubble);
-      chat.scrollTop = chat.scrollHeight;
-    }
   </script>
 </body>
 </html>
