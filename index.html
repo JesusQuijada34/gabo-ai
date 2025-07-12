@@ -6,11 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
+    :root {
+      --color-bubble: linear-gradient(145deg, #005eff, #00ffff);
+      --input-bg: #111;
+      --input-border: #00ffff;
+      --bubble-radius: 18px;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #050a1f, #092037, #0a394a);
-      color: white;
+      background: radial-gradient(circle at top left, #081626, #02101f);
+      color: #fff;
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -19,14 +26,14 @@
     #popup {
       position: fixed;
       top: 0;
-      left: 0;
-      right: 0;
+      width: 100%;
       background: #ff4444;
       color: white;
+      font-weight: bold;
       text-align: center;
       padding: 10px;
+      z-index: 999;
       display: none;
-      font-weight: bold;
     }
 
     #chat {
@@ -41,133 +48,151 @@
       max-width: 70%;
       margin: 0.5rem;
       padding: 1rem;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #001933, #004466);
-      border: 2px solid transparent;
-      border-image: linear-gradient(90deg, #00ccff, #3366ff) 1;
-      animation: fade 0.3s ease;
+      border-radius: var(--bubble-radius);
+      background: var(--color-bubble);
+      color: black;
       position: relative;
+      animation: fade 0.3s ease;
       white-space: pre-wrap;
     }
 
     .user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #0044cc, #00ccff);
-      border-image: linear-gradient(90deg, #00ccff, #66ccff) 1;
+      border-top-right-radius: 0;
     }
 
     .gabo {
       align-self: flex-start;
+      border-top-left-radius: 0;
     }
 
     .footer {
-      display: flex;
-      justify-content: space-between;
       font-size: 0.75rem;
       opacity: 0.7;
       margin-top: 5px;
-    }
-
-    .checks {
       display: flex;
-      align-items: center;
-      gap: 3px;
+      justify-content: space-between;
     }
 
     #controls {
       display: flex;
       padding: 1rem;
       background: #000c;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(8px);
     }
 
     #input {
       flex: 1;
-      padding: 0.6rem;
-      border-radius: 12px;
-      border: none;
+      padding: 0.7rem;
       font-size: 1rem;
-      background: #111;
+      border-radius: 10px;
+      background: var(--input-bg);
       color: white;
-      border: 2px solid #00ccff;
+      border: 2px solid var(--input-border);
     }
 
     #send {
       margin-left: 0.5rem;
-      padding: 0.6rem 1rem;
+      padding: 0.7rem 1rem;
       font-weight: bold;
-      background: linear-gradient(45deg, #00ffff, #0066ff);
+      background: linear-gradient(45deg, #00ffff, #0055ff);
       color: black;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0 0 10px #00ffff;
+    }
+
+    #settings {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.5);
+      padding: 0.5rem;
+      border-radius: 8px;
+      color: white;
+      font-size: 0.8rem;
+      z-index: 10;
+    }
+
+    #settings select {
+      background: #222;
+      color: white;
+      border: 1px solid #00ffff;
+      margin: 4px 0;
+      border-radius: 4px;
     }
 
     @keyframes fade {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    svg {
-      width: 16px;
-      height: 16px;
-    }
   </style>
 </head>
 <body>
   <div id="popup">⚠️ Sin conexión a internet</div>
+  <div id="settings">
+    <label>Color burbuja:</label>
+    <select id="color">
+      <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
+      <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
+      <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
+    </select>
+    <label>Estilo input:</label>
+    <select id="inputstyle">
+      <option value="#111|#00ffff">Oscuro Neón</option>
+      <option value="#fff|#0077cc">Claro Azul</option>
+    </select>
+  </div>
+
   <div id="chat"></div>
   <div id="controls">
     <input type="text" id="input" placeholder="Escribe tu mensaje..." />
     <button id="send">Enviar</button>
   </div>
+
   <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
 
   <script>
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('input');
-    const send = document.getElementById('send');
-    const popup = document.getElementById('popup');
-    const blup = document.getElementById('blup');
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+    const popup = document.getElementById("popup");
+    const blup = document.getElementById("blup");
+
+    document.getElementById("color").onchange = (e) =>
+      document.documentElement.style.setProperty("--color-bubble", e.target.value);
+
+    document.getElementById("inputstyle").onchange = (e) => {
+      const [bg, border] = e.target.value.split("|");
+      document.documentElement.style.setProperty("--input-bg", bg);
+      document.documentElement.style.setProperty("--input-border", border);
+    };
 
     function getTime() {
       const now = new Date();
-      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
 
-    function createChecks(state) {
-      return `
-        <div class="checks">
-          ${state.sent ? singleCheck() : ''}
-          ${state.received ? doubleCheck(false) : ''}
-          ${state.read ? doubleCheck(true) : ''}
-        </div>
-      `;
+    function verifyState(sent, received, read) {
+      if (!received) return "✓";
+      if (read) return "<span style='color:#00ffff'>✓✓</span>";
+      return "✓✓";
     }
 
-    function singleCheck() {
-      return `<svg viewBox="0 0 24 24"><path fill="#ccc" d="M9 12l2 2 4-4"/></svg>`;
-    }
-
-    function doubleCheck(read) {
-      const color = read ? '#00ccff' : '#ccc';
-      return `
-        <svg viewBox="0 0 24 24"><path fill="${color}" d="M8 12l2 2 4-4"/></svg>
-        <svg viewBox="0 0 24 24"><path fill="${color}" d="M12 12l2 2 4-4"/></svg>
-      `;
-    }
-
-    function addBubble(text, role = 'gabo', state = { sent: true, received: true, read: false }) {
-      const bubble = document.createElement('div');
+    function addBubble(text, role = "gabo", sent = true, received = true, read = false) {
+      const bubble = document.createElement("div");
       bubble.className = `bubble ${role}`;
-      bubble.innerHTML = marked.parse(text.replace(/DeepSeek/gi, 'Gabo'));
+      bubble.innerHTML = marked.parse(text.replace(/DeepSeek/gi, "Gabo"));
 
-      const footer = document.createElement('div');
-      footer.className = 'footer';
-      footer.innerHTML = `<span>${getTime()}</span>${role === 'user' ? createChecks(state) : ''}`;
+      const footer = document.createElement("div");
+      footer.className = "footer";
+      if (role === "user") {
+        footer.innerHTML = `<span>${getTime()}</span><span>${verifyState(sent, received, read)}</span>`;
+      } else {
+        footer.innerHTML = `<span>${getTime()}</span>`;
+      }
+
       bubble.appendChild(footer);
-
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
     }
@@ -175,38 +200,39 @@
     send.onclick = async () => {
       const msg = input.value.trim();
       if (!msg) return;
-      input.value = '';
+      input.value = "";
       send.disabled = true;
-      send.textContent = 'Pensando...';
+      send.textContent = "Pensando...";
 
-      addBubble(msg, 'user', { sent: true, received: false, read: false });
+      addBubble(msg, "user", true, false, false);
 
       try {
-        const res = await fetch('https://api.together.xyz/v1/chat/completions', {
-          method: 'POST',
+        const res = await fetch("https://api.together.xyz/v1/chat/completions", {
+          method: "POST",
           headers: {
-            'Authorization': 'Bearer 97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210',
-            'Content-Type': 'application/json'
+            Authorization: "Bearer 97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210",
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: 'deepseek-ai/DeepSeek-V3',
-            messages: [{ role: 'user', content: msg }]
-          })
+            model: "deepseek-ai/DeepSeek-V3",
+            messages: [{ role: "user", content: msg }],
+          }),
         });
 
-        if (!res.ok) throw new Error('Sin conexión');
+        if (!res.ok) throw new Error("Sin conexión");
+
         const data = await res.json();
-        let texto = data.choices[0].message.content || '';
+        let texto = data.choices[0].message.content || "";
         blup.play();
-        addBubble(texto, 'gabo');
+        addBubble(texto, "gabo");
       } catch (e) {
-        popup.style.display = 'block';
-        setTimeout(() => (popup.style.display = 'none'), 3000);
-        addBubble('No se pudo entregar el mensaje', 'user', { sent: true });
+        popup.style.display = "block";
+        setTimeout(() => (popup.style.display = "none"), 4000);
+        addBubble("No se pudo entregar el mensaje", "user", true, false, false);
       }
 
       send.disabled = false;
-      send.textContent = 'Enviar';
+      send.textContent = "Enviar";
     };
   </script>
 </body>
