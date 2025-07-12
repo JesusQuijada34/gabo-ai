@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Influent Gabo AI</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1f1f1f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .bubble {
+      max-width: 70%;
+      margin: 0.5rem;
+      padding: 1rem;
+      border-radius: 1rem;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .user {
+      align-self: flex-start;
+      background: #444;
+    }
+    .gabo {
+      align-self: flex-end;
+      background: #0077cc;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #controls {
+      display: flex;
+      padding: 1rem;
+      background: #000;
+    }
+    #input {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+    }
+    #send {
+      margin-left: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      background: #0066aa;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      font-size: 0.8rem;
+      background: rgba(255,255,255,0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat"></div>
+  <div id="controls">
+    <input type="text" id="input" placeholder="Escribe algo..." />
+    <button id="send">Enviar</button>
+  </div>
+  <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
+    const blup = document.getElementById('blup');
+
+    send.onclick = async () => {
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+      send.disabled = true;
+      send.textContent = 'Pensando...';
+      send.style.background = '#888';
+
+      addBubble(msg, 'user');
+
+      try {
+        const response = await fetch('https://api.together.xyz/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer TU_API_KEY_AQUI',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'deepseek-ai/DeepSeek-V3',
+            messages: [{ role: 'user', content: msg }]
+          })
+        });
+        const data = await response.json();
+        let texto = data.choices[0].message.content || '';
+        texto = texto.replace(/DeepSeek/gi, 'Gabo');
+
+        addBubble(texto, 'gabo');
+        blup.play();
+      } catch (err) {
+        addBubble('⚠️ Error: ' + err.message, 'gabo');
+      }
+
+      send.disabled = false;
+      send.textContent = 'Enviar';
+      send.style.background = '#0066aa';
+    };
+
+    function addBubble(text, role) {
+      const bubble = document.createElement('div');
+      bubble.className = `bubble ${role}`;
+      bubble.textContent = text;
+
+      if (/```[\s\S]+```/.test(text)) {
+        const match = text.match(/```(\w*)\n([\s\S]*?)```/);
+        if (match) {
+          bubble.textContent = match[1] ? `[${match[1]} CODE]\n` + match[2] : match[2];
+          const copy = document.createElement('div');
+          copy.id = 'copy-btn';
+          copy.textContent = '📋';
+          copy.onclick = () => navigator.clipboard.writeText(match[2]);
+          bubble.appendChild(copy);
+        }
+      }
+
+      chat.appendChild(bubble);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
