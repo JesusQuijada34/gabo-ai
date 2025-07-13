@@ -2,38 +2,38 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Influent Gabo AI Chat</title>
+  <title>Gabo AI Chat WhatsApp Style</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
-      --color-bubble: linear-gradient(145deg, #005eff, #00ffff);
-      --input-bg: #111;
-      --input-border: #00ffff;
-      --bubble-radius: 18px;
-      --settings-bg: linear-gradient(140deg, #0036a2 40%, #00c6fb 100%);
-      --settings-shadow: 0 8px 32px 0 rgba(0, 54, 162, 0.37);
+      --user-bg: #dcf8c6;         /* WhatsApp user bubble */
+      --gabo-bg: #fff;            /* WhatsApp bot bubble */
+      --user-color: #222;
+      --gabo-color: #222;
+      --input-bg: #f7f7f7;
+      --input-border: #ececec;
+      --main-bg: #e5ddd5;
+      --accent: #075e54;
+      --border-radius: 22px;
+      --bubble-small: 13px;
+      --bubble-padding: 10px 18px;
     }
+
     body {
       margin: 0;
-      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+      font-family: 'Roboto', Arial, sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #001b3a 0%, #2473c8 50%, #00c6fb 100%);
-      color: #fff;
+      background: var(--main-bg);
+      color: #222;
       display: flex;
       flex-direction: column;
-      transition: background 1s;
-      animation: gradientMove 20s ease infinite;
-      overflow: hidden;
       height: 100vh;
+      transition: background 0.5s;
+      overflow: hidden;
     }
-    @keyframes gradientMove {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-    /* Main area */
+
     #main {
       display: flex;
       flex-direction: column;
@@ -41,274 +41,255 @@
       min-height: 0;
       position: relative;
       height: 100vh;
+      max-width: 100vw;
     }
+
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 2rem 1rem 1rem 1rem;
+      padding: 9px 6px 0 6px;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 3px;
       min-height: 0;
-      transition: background 0.5s;
+      background: transparent;
       z-index: 1;
     }
+
     .bubble {
-      max-width: 70%;
-      margin: 0.5rem;
-      padding: 1rem 1.3rem;
-      border-radius: var(--bubble-radius);
-      background: var(--color-bubble);
-      color: #222;
-      position: relative;
-      animation: fadeIn 0.5s;
-      white-space: pre-wrap;
-      box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.25);
-      font-size: 0.95rem;
+      max-width: 80vw;
+      margin: 1.5px 0;
+      padding: var(--bubble-padding);
+      border-radius: var(--border-radius);
+      font-size: var(--bubble-small);
       word-break: break-word;
-      overflow-wrap: anywhere;
-      transition: transform 0.15s;
-      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-      line-height: 1.55;
-    }
-    .bubble code {
-      font-family: 'Roboto Mono', 'Menlo', 'Monaco', monospace;
-      font-size: 0.88rem;
-      background: #222;
-      color: #00c6fb;
-      border-radius: 5px;
-      padding: 0.14em 0.32em;
-      box-shadow: 0 1px 4px #0036a277;
-    }
-    .bubble pre {
-      background: #181818;
-      color: #00eaff;
-      font-family: 'Roboto Mono', 'Menlo', 'Monaco', monospace;
-      font-size: 0.93rem;
-      border-radius: 7px;
-      padding: 1em 1.3em 1.3em 1em;
-      margin: 0.5em 0 0.2em 0;
-      overflow-x: auto;
+      font-family: 'Roboto', Arial, sans-serif;
+      box-shadow: 0 0.5px 3px #0002;
       position: relative;
-      box-shadow: 0 2px 12px #0036a244;
-      white-space: pre;
-      word-break: break-all;
-      max-width: 100%;
+      line-height: 1.45;
+      animation: fadeIn 0.5s;
     }
-    .copy-btn {
-      position: absolute;
-      top: 9px;
-      right: 16px;
-      background: #005eff;
-      color: #fff;
-      border: none;
-      font-size: 0.97rem;
-      border-radius: 7px;
-      cursor: pointer;
-      padding: 0.22em 0.8em;
-      z-index: 2;
-      transition: background 0.2s;
-    }
-    .copy-btn:hover { background: #00c6fb; color: #005eff; }
+
     .user {
       align-self: flex-end;
-      border-top-right-radius: 0;
-      background: linear-gradient(145deg, #00c6fb, #005eff);
-      color: #1d1d3d;
-      font-weight: 500;
-      box-shadow: 0 2px 14px 0 rgba(0, 198, 251, 0.13);
+      background: var(--user-bg);
+      color: var(--user-color);
+      border-bottom-right-radius: 4px;
+      border-bottom-left-radius: var(--border-radius);
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
     }
+
     .gabo {
       align-self: flex-start;
-      border-top-left-radius: 0;
+      background: var(--gabo-bg);
+      color: var(--gabo-color);
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+      border-top-left-radius: var(--border-radius);
     }
+
     .footer {
-      font-size: 0.72rem;
-      opacity: 0.7;
+      font-size: 0.69rem;
+      opacity: 0.6;
       margin-top: 5px;
-      display: flex;
-      justify-content: space-between;
-      font-family: inherit;
+      text-align: right;
       color: #555;
+      font-family: inherit;
+      position: relative;
     }
+
     #controls {
       display: flex;
-      padding: 1.2rem;
-      background: rgba(0,0,0,0.42);
-      backdrop-filter: blur(12px);
-      gap: 0.7rem;
+      padding: 8px 5px 8px 5px;
+      background: #fff;
+      border-top: 1px solid var(--input-border);
+      gap: 7px;
       z-index: 2;
-      box-shadow: 0 -4px 18px 0 rgba(0, 54, 162, 0.12);
-      border-top-left-radius: 22px;
-      border-top-right-radius: 22px;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
       position: sticky;
       bottom: 0;
       left: 0;
       right: 0;
       margin-top: auto;
+      box-shadow: 0 -2px 12px #0001;
     }
+
     #input {
       flex: 1;
-      padding: 0.9rem;
-      font-size: 1.03rem;
-      border-radius: 10px;
+      padding: 9px 13px;
+      font-size: 1rem;
+      border-radius: 8px;
       background: var(--input-bg);
-      color: white;
-      border: 2px solid var(--input-border);
-      outline: none;
-      transition: background 0.4s, color 0.4s, border 0.4s;
-      box-shadow: 0 2px 8px 0 rgba(0, 54, 162, 0.12);
-      font-family: inherit;
-    }
-    #input:focus {
-      border-color: #00c6fb;
-      background: #222;
-      color: #00c6fb;
-    }
-    #send {
-      padding: 0.9rem 1.3rem;
-      font-weight: bold;
-      background: linear-gradient(45deg, #00ffff, #0055ff);
-      color: black;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1.08rem;
-      transition: background 0.3s, color 0.3s, box-shadow 0.3s;
-      box-shadow: 0 2px 8px 0 rgba(0, 54, 162, 0.1);
-      font-family: inherit;
-    }
-    #send:active {
-      background: linear-gradient(45deg, #0055ff, #00ffff);
       color: #222;
-      box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.18);
+      border: 1.3px solid var(--input-border);
+      outline: none;
+      font-family: inherit;
+      box-shadow: 0 1px 4px #0001;
     }
-    /* Mini window for settings */
+
+    #send {
+      padding: 0 18px;
+      font-weight: bold;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.07rem;
+      transition: background 0.3s;
+      font-family: inherit;
+      box-shadow: 0 2px 6px #075e5422;
+    }
+
+    #send:active {
+      background: #128c7e;
+    }
+
     #settings-btn {
       position: absolute;
-      top: 18px;
-      right: 24px;
-      background: linear-gradient(45deg, #00c6fb, #005eff);
+      top: 11px;
+      right: 17px;
+      background: var(--accent);
       color: #fff;
       border: none;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      font-size: 1.6rem;
+      width: 33px;
+      height: 33px;
+      font-size: 1.18rem;
       cursor: pointer;
       z-index: 20;
-      box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.19);
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.3s;
+      box-shadow: 0 2px 10px #075e5412;
+      transition: background 0.2s;
     }
-    #settings-btn:hover {
-      background: linear-gradient(45deg, #005eff, #00c6fb);
-    }
+    #settings-btn:hover { background: #128c7e; }
+
     #settings-modal {
       position: fixed;
-      top: 60px;
-      right: 34px;
-      width: 265px;
-      background: var(--settings-bg);
-      color: white;
-      border-radius: 16px;
-      box-shadow: var(--settings-shadow);
-      padding: 1.2rem 1rem 1rem 1rem;
+      top: 44px;
+      right: 16px;
+      width: 210px;
+      background: #fff;
+      color: #222;
+      border-radius: 13px;
+      box-shadow: 0 6px 24px #075e5412;
+      padding: 0.9rem 0.7rem 0.6rem 0.7rem;
       z-index: 100;
       display: none;
       animation: popupAnim 0.4s;
+      font-size: 0.93rem;
     }
     @keyframes popupAnim {
-      from {opacity: 0; transform: translateY(-30px);}
+      from {opacity: 0; transform: translateY(-20px);}
       to {opacity: 1; transform: translateY(0);}
     }
     #settings-modal h3 {
       margin-top: 0;
-      font-size: 1.08rem;
+      font-size: 1rem;
       text-align: center;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.6em;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.5em;
       font-weight: 500;
-      color: #fff;
-      text-shadow: 0 2px 8px #005eff44;
+      color: var(--accent);
     }
     #settings-modal label {
-      margin: 9px 0 3px 0;
+      margin: 6px 0 2px 0;
       display: block;
-      font-size: 0.99em;
+      font-size: 0.98em;
       font-weight: 500;
-      color: #e4f3ff;
+      color: #128c7e;
     }
-    #settings-modal select {
-      background: #222;
-      color: white;
-      border: 1px solid #00ffff;
-      margin: 4px 0 12px 0;
+    #settings-modal select, #settings-modal input[type="color"] {
+      background: #f7f7f7;
+      color: #222;
+      border: 1px solid #ececec;
+      margin: 3px 0 9px 0;
       border-radius: 6px;
       width: 100%;
-      padding: 5px 4px;
-      font-size: 1em;
+      padding: 4px 3px;
+      font-size: 0.97em;
       font-family: inherit;
-      transition: border 0.3s;
     }
     #settings-close {
       position: absolute;
-      top: 9px;
-      right: 12px;
+      top: 7px;
+      right: 9px;
       background: none;
       border: none;
-      color: #fff;
-      font-size: 1.25rem;
+      color: var(--accent);
+      font-size: 1.08rem;
       cursor: pointer;
       font-weight: bold;
       padding: 0;
       z-index: 110;
       transition: color 0.2s;
     }
-    #settings-close:hover {
-      color: #00ffff;
-    }
+    #settings-close:hover { color: #128c7e; }
     #delete-history-btn {
-      margin-top: 9px;
+      margin-top: 5px;
       background: #ff4444;
       color: #fff;
       border: none;
       border-radius: 7px;
-      font-size: 0.95em;
-      padding: 0.5em 1em;
+      font-size: 0.93em;
+      padding: 0.39em 0.9em;
       cursor: pointer;
       font-weight: bold;
       width: 100%;
       box-shadow: 0 2px 8px #0036a244;
-      transition: background 0.2s;
+      transition: background 0.18s;
     }
     #delete-history-btn:hover { background: #e20000; }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(18px);}
+      from { opacity: 0; transform: translateY(12px);}
       to { opacity: 1; transform: translateY(0);}
     }
-    @media (max-width: 700px) {
-      #main { padding-left: 0 !important; }
-    }
-    @media (max-width: 600px) {
-      #settings-modal {
-        right: 10px;
-        width: 95vw;
-        min-width: 0;
-        max-width: 400px;
-        top: 56px;
+
+    /* Modo minimalista en móviles */
+    @media (max-width: 600px), (pointer:coarse) {
+      :root {
+        --bubble-small: 12px;
+        --bubble-padding: 8px 13px;
+        --border-radius: 18px;
       }
-      #settings-btn {
-        right: 10px;
-        top: 8px;
-      }
-      #controls {
-        padding: 0.7rem;
+      #main {
+        padding: 0 !important;
+        max-width: 100vw;
       }
       #chat {
-        padding: 1rem 0.5rem;
+        padding: 4px 2px 0 2px;
+        gap: 2px;
+      }
+      #settings-modal {
+        right: 6px;
+        width: 95vw;
+        min-width: 0;
+        max-width: 360px;
+        top: 40px;
+        font-size: 0.92rem;
+      }
+      #settings-btn {
+        right: 6px;
+        top: 5px;
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+      }
+      #controls {
+        padding: 5px 2px;
+      }
+      #input {
+        font-size: 0.98rem;
+        padding: 6px 10px;
+      }
+      #send {
+        font-size: 0.98rem;
+        padding: 0 12px;
       }
     }
   </style>
@@ -319,31 +300,19 @@
     <button id="settings-btn" title="Configuración">⚙️</button>
     <div id="settings-modal">
       <button id="settings-close" title="Cerrar">&times;</button>
-      <h3>Configuración de Chat</h3>
-      <label for="color">Color burbuja:</label>
-      <select id="color">
-        <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
-        <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
-        <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
-        <option value="linear-gradient(145deg, #f5bb00, #00c6fb)">Amarillo Cielo</option>
-        <option value="linear-gradient(145deg, #ff7b00, #ffef00)">Naranja Sol</option>
-        <option value="linear-gradient(145deg, #222, #444)">Gris Oscuro</option>
-        <option value="linear-gradient(145deg, #c2e7ff, #a8f0e6)">Aqua Pastel</option>
-        <option value="linear-gradient(145deg, #c800ff, #ff0080)">Morado Intenso</option>
-        <option value="linear-gradient(145deg, #ffe0e0, #fff200)">Rosado Amarillo</option>
+      <h3>Temas de Chat</h3>
+      <label for="theme">Tema:</label>
+      <select id="theme">
+        <option value="default">WhatsApp</option>
+        <option value="mint">Menta</option>
+        <option value="pink">Rosa</option>
+        <option value="midnight">Oscuro</option>
+        <option value="sun">Sol</option>
+        <option value="aqua">Aqua</option>
       </select>
-      <label for="inputstyle">Estilo input:</label>
-      <select id="inputstyle">
-        <option value="#111|#00ffff">Oscuro Neón</option>
-        <option value="#fff|#0077cc">Claro Azul</option>
-        <option value="#002040|#00c6fb">Azul Oscuro</option>
-        <option value="#d2f3ff|#005eff">Celeste</option>
-        <option value="#ffe0e0|#ff0080">Rosado Pastel</option>
-        <option value="#222|#444">Gris Oscuro</option>
-        <option value="#ffffe0|#ffd700">Amarillo Claro</option>
-        <option value="#c2e7ff|#a8f0e6">Aqua Pastel</option>
-      </select>
-      <button id="delete-history-btn">🗑️ Eliminar historial</button>
+      <label for="accentcolor">Color principal:</label>
+      <input type="color" id="accentcolor" value="#075e54" />
+      <button id="delete-history-btn">🗑️ Borrar chat</button>
     </div>
     <div id="chat"></div>
     <div id="controls">
@@ -355,7 +324,7 @@
   <script>
     document.body.style.backgroundSize = "200% 200%";
 
-    // Simple historial localStorage, multiplataforma
+    // Historial
     const HISTORY_KEY = "gabo_historial_multiplataforma";
     function saveHistory(history) {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
@@ -380,7 +349,74 @@
     const settingsModal = document.getElementById("settings-modal");
     const settingsClose = document.getElementById("settings-close");
     const deleteHistoryBtn = document.getElementById("delete-history-btn");
+    const themeSel = document.getElementById("theme");
+    const accentColorSel = document.getElementById("accentcolor");
 
+    // Temas personalizados
+    const themes = {
+      default: {
+        '--user-bg': '#dcf8c6',
+        '--gabo-bg': '#fff',
+        '--main-bg': '#e5ddd5',
+        '--accent': '#075e54',
+        '--user-color': '#222',
+        '--gabo-color': '#222'
+      },
+      mint: {
+        '--user-bg': '#c9ffe5',
+        '--gabo-bg': '#fff',
+        '--main-bg': '#e0f7fa',
+        '--accent': '#00b894',
+        '--user-color': '#222',
+        '--gabo-color': '#222'
+      },
+      pink: {
+        '--user-bg': '#ffdde8',
+        '--gabo-bg': '#fff',
+        '--main-bg': '#ffe0ed',
+        '--accent': '#e040fb',
+        '--user-color': '#222',
+        '--gabo-color': '#222'
+      },
+      midnight: {
+        '--user-bg': '#313131',
+        '--gabo-bg': '#181818',
+        '--main-bg': '#222',
+        '--accent': '#607d8b',
+        '--user-color': '#f7f7f7',
+        '--gabo-color': '#f7f7f7'
+      },
+      sun: {
+        '--user-bg': '#fff7b2',
+        '--gabo-bg': '#fff',
+        '--main-bg': '#fffde4',
+        '--accent': '#fbc02d',
+        '--user-color': '#222',
+        '--gabo-color': '#222'
+      },
+      aqua: {
+        '--user-bg': '#c2e7ff',
+        '--gabo-bg': '#fff',
+        '--main-bg': '#e0f7fa',
+        '--accent': '#00bcd4',
+        '--user-color': '#222',
+        '--gabo-color': '#222'
+      }
+    };
+
+    function applyTheme(themeName) {
+      const theme = themes[themeName] || themes['default'];
+      Object.entries(theme).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(key, value);
+      });
+      document.documentElement.style.setProperty('--accent', accentColorSel.value);
+      settingsBtn.style.background = accentColorSel.value;
+      settingsClose.style.color = accentColorSel.value;
+    }
+    themeSel.onchange = () => applyTheme(themeSel.value);
+    accentColorSel.oninput = () => applyTheme(themeSel.value);
+
+    // Configuración modal
     settingsBtn.onclick = () => {
       settingsModal.style.display = "block";
       settingsBtn.style.display = "none";
@@ -396,20 +432,7 @@
       }
     });
 
-    document.getElementById("color").onchange = (e) =>
-      document.documentElement.style.setProperty("--color-bubble", e.target.value);
-
-    document.getElementById("inputstyle").onchange = (e) => {
-      const [bg, border] = e.target.value.split("|");
-      document.documentElement.style.setProperty("--input-bg", bg);
-      document.documentElement.style.setProperty("--input-border", border);
-      const textColor = bg === "#fff" || bg === "#d2f3ff" || bg === "#ffe0e0" || bg === "#ffffe0" ? "#222" : "white";
-      input.style.color = textColor;
-      input.style.background = bg;
-      input.style.borderColor = border;
-    };
-
-    // Renderiza historial
+    // Renderizar historial
     let history = [];
     function loadAndRenderHistory() {
       chat.innerHTML = "";
@@ -440,50 +463,36 @@
     }
     function verifyState(sent, received, read) {
       if (!received) return "✓";
-      if (read) return "<span style='color:#00ffff'>✓✓</span>";
+      if (read) return "<span style='color:var(--accent)'>✓✓</span>";
       return "✓✓";
     }
     function addBubble(text, role = "gabo", sent = true, received = true, read = false, noSave) {
       const bubble = document.createElement("div");
       bubble.className = `bubble ${role}`;
 
-      // Procesar markdown y bloques de código para copiar
+      // Procesar markdown
       let html = marked.parse(text.replace(/DeepSeek/gi, "Gabo"));
       bubble.innerHTML = html;
 
-      // Buscar bloques de código y agregar botón copiar
-      bubble.querySelectorAll("pre > code").forEach(codeBlock => {
-        const pre = codeBlock.parentNode;
-        pre.style.position = "relative";
-        const btn = document.createElement("button");
-        btn.className = "copy-btn";
-        btn.textContent = "Copiar";
-        btn.onclick = () => {
-          navigator.clipboard.writeText(codeBlock.textContent);
-          btn.textContent = "Copiado!";
-          setTimeout(() => btn.textContent = "Copiar", 1200);
-        };
-        pre.appendChild(btn);
-      });
-
+      // Footer estilo WhatsApp
       const footer = document.createElement("div");
       footer.className = "footer";
       if (role === "user") {
-        footer.innerHTML = `<span>${getTime()}</span><span>${verifyState(sent, received, read)}</span>`;
+        footer.innerHTML = `<span>${getTime()}</span> <span>${verifyState(sent, received, read)}</span>`;
       } else {
         footer.innerHTML = `<span>${getTime()}</span>`;
       }
-
       bubble.appendChild(footer);
+
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
 
-      // Animar burbuja al entrar
+      // Animación entrada
       bubble.animate([
-        { opacity: 0, transform: "translateY(18px)" },
+        { opacity: 0, transform: "translateY(12px)" },
         { opacity: 1, transform: "translateY(0)" }
       ], {
-        duration: 420,
+        duration: 320,
         easing: "ease"
       });
 
@@ -541,18 +550,19 @@
 
     // Animaciones extra: focus en input, blur al enviar
     input.addEventListener('focus', () => {
-      input.style.boxShadow = "0 0 0 2px #00c6fb";
+      input.style.boxShadow = "0 0 0 2px var(--accent)";
     });
     input.addEventListener('blur', () => {
-      input.style.boxShadow = "0 2px 8px 0 rgba(0, 54, 162, 0.12)";
+      input.style.boxShadow = "0 1px 4px #0001";
     });
 
     // Animación de apertura de chat y render historial
     window.onload = () => {
+      applyTheme(themeSel.value);
       loadAndRenderHistory();
     };
 
-    // Para mejorar experiencia en móviles: scroll al input al abrir teclado
+    // Mejor experiencia móvil: scroll al input al abrir teclado
     input.addEventListener("focus", () => {
       setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 350);
     });
