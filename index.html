@@ -1,3 +1,4 @@
+```html name=index.html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,18 +12,26 @@
       --input-bg: #111;
       --input-border: #00ffff;
       --bubble-radius: 18px;
+      --settings-bg: linear-gradient(140deg, #0036a2 40%, #00c6fb 100%);
+      --settings-shadow: 0 8px 32px 0 rgba(0, 54, 162, 0.37);
     }
-
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: radial-gradient(circle at top left, #081626, #02101f);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #001b3a 0%, #2473c8 50%, #00c6fb 100%);
       color: #fff;
-      height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background 1s;
+      animation: gradientMove 20s ease infinite;
+      overflow: hidden;
     }
-
+    @keyframes gradientMove {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
     #popup {
       position: fixed;
       top: 0;
@@ -34,38 +43,54 @@
       padding: 10px;
       z-index: 999;
       display: none;
+      animation: slideDown 0.4s;
     }
-
+    @keyframes slideDown {
+      from {transform: translateY(-50px); opacity: 0;}
+      to {transform: translateY(0); opacity: 1;}
+    }
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 1rem;
+      padding: 2rem 1rem 1rem 1rem;
       display: flex;
       flex-direction: column;
+      gap: 0.5rem;
+      min-height: 0;
+      transition: background 0.5s;
+      z-index: 1;
     }
-
     .bubble {
       max-width: 70%;
       margin: 0.5rem;
-      padding: 1rem;
+      padding: 1rem 1.3rem;
       border-radius: var(--bubble-radius);
       background: var(--color-bubble);
       color: black;
       position: relative;
-      animation: fade 0.3s ease;
+      animation: fadeIn 0.5s;
       white-space: pre-wrap;
+      box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.25);
+      font-size: 1.08rem;
+      transition: transform 0.15s;
     }
-
+    .bubble:hover {
+      transform: scale(1.03);
+      z-index: 2;
+      box-shadow: 0 8px 32px 0 rgba(0, 54, 162, 0.43);
+    }
     .user {
       align-self: flex-end;
       border-top-right-radius: 0;
+      background: linear-gradient(145deg, #00c6fb, #005eff);
+      color: #1d1d3d;
+      font-weight: 500;
+      box-shadow: 0 2px 14px 0 rgba(0, 198, 251, 0.13);
     }
-
     .gabo {
       align-self: flex-start;
       border-top-left-radius: 0;
     }
-
     .footer {
       font-size: 0.75rem;
       opacity: 0.7;
@@ -73,92 +98,223 @@
       display: flex;
       justify-content: space-between;
     }
-
     #controls {
       display: flex;
-      padding: 1rem;
-      background: #000c;
-      backdrop-filter: blur(8px);
+      padding: 1.2rem;
+      background: rgba(0,0,0,0.42);
+      backdrop-filter: blur(12px);
+      gap: 0.7rem;
+      z-index: 1;
+      box-shadow: 0 -4px 18px 0 rgba(0, 54, 162, 0.12);
+      border-top-left-radius: 22px;
+      border-top-right-radius: 22px;
     }
-
     #input {
       flex: 1;
-      padding: 0.7rem;
-      font-size: 1rem;
+      padding: 0.9rem;
+      font-size: 1.1rem;
       border-radius: 10px;
       background: var(--input-bg);
       color: white;
       border: 2px solid var(--input-border);
+      outline: none;
+      transition: background 0.4s, color 0.4s, border 0.4s;
+      box-shadow: 0 2px 8px 0 rgba(0, 54, 162, 0.12);
     }
-
+    #input:focus {
+      border-color: #00c6fb;
+      background: #222;
+      color: #00c6fb;
+    }
     #send {
-      margin-left: 0.5rem;
-      padding: 0.7rem 1rem;
+      padding: 0.9rem 1.3rem;
       font-weight: bold;
       background: linear-gradient(45deg, #00ffff, #0055ff);
       color: black;
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      font-size: 1.08rem;
+      transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 2px 8px 0 rgba(0, 54, 162, 0.1);
     }
-
-    #settings {
+    #send:active {
+      background: linear-gradient(45deg, #0055ff, #00ffff);
+      color: #222;
+      box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.18);
+    }
+    /* Mini window for settings */
+    #settings-btn {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(0,0,0,0.5);
-      padding: 0.5rem;
-      border-radius: 8px;
-      color: white;
-      font-size: 0.8rem;
-      z-index: 10;
+      top: 18px;
+      right: 24px;
+      background: linear-gradient(45deg, #00c6fb, #005eff);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.6rem;
+      cursor: pointer;
+      z-index: 20;
+      box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.19);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
     }
-
-    #settings select {
+    #settings-btn:hover {
+      background: linear-gradient(45deg, #005eff, #00c6fb);
+    }
+    #settings-modal {
+      position: fixed;
+      top: 60px;
+      right: 34px;
+      width: 265px;
+      background: var(--settings-bg);
+      color: white;
+      border-radius: 16px;
+      box-shadow: var(--settings-shadow);
+      padding: 1.2rem 1rem 1rem 1rem;
+      z-index: 100;
+      display: none;
+      animation: popupAnim 0.4s;
+    }
+    @keyframes popupAnim {
+      from {opacity: 0; transform: translateY(-30px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    #settings-modal h3 {
+      margin-top: 0;
+      font-size: 1.08rem;
+      text-align: center;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.6em;
+      font-weight: 500;
+      color: #fff;
+      text-shadow: 0 2px 8px #005eff44;
+    }
+    #settings-modal label {
+      margin: 9px 0 3px 0;
+      display: block;
+      font-size: 0.99em;
+      font-weight: 500;
+      color: #e4f3ff;
+    }
+    #settings-modal select {
       background: #222;
       color: white;
       border: 1px solid #00ffff;
-      margin: 4px 0;
-      border-radius: 4px;
+      margin: 4px 0 12px 0;
+      border-radius: 6px;
+      width: 100%;
+      padding: 5px 4px;
+      font-size: 1em;
+      font-family: inherit;
+      transition: border 0.3s;
     }
-
-    @keyframes fade {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    #settings-close {
+      position: absolute;
+      top: 9px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.25rem;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+      z-index: 110;
+      transition: color 0.2s;
+    }
+    #settings-close:hover {
+      color: #00ffff;
+    }
+    /* Animación de entrada a las burbujas */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      #settings-modal {
+        right: 10px;
+        width: 95vw;
+        min-width: 0;
+        max-width: 400px;
+        top: 56px;
+      }
+      #settings-btn {
+        right: 10px;
+        top: 8px;
+      }
+      #controls {
+        padding: 0.7rem;
+      }
+      #chat {
+        padding: 1rem 0.5rem;
+      }
     }
   </style>
 </head>
 <body>
   <div id="popup">⚠️ Sin conexión a internet</div>
-  <div id="settings">
-  <label>Color burbuja:</label>
-  <select id="color">
-    <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
-    <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
-    <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
-  </select>
 
-  <label>Estilo input:</label>
-  <select id="inputstyle">
-    <option value="#111|#00ffff">Oscuro Neón</option>
-    <option value="#fff|#0077cc">Claro Azul</option>
-  </select>
-</div>
+  <button id="settings-btn" title="Configuración">⚙️</button>
+  <div id="settings-modal">
+    <button id="settings-close" title="Cerrar">&times;</button>
+    <h3>Configuración de Chat</h3>
+    <label for="color">Color burbuja:</label>
+    <select id="color">
+      <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
+      <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
+      <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
+      <option value="linear-gradient(145deg, #f5bb00, #00c6fb)">Amarillo Cielo</option>
+    </select>
+    <label for="inputstyle">Estilo input:</label>
+    <select id="inputstyle">
+      <option value="#111|#00ffff">Oscuro Neón</option>
+      <option value="#fff|#0077cc">Claro Azul</option>
+      <option value="#002040|#00c6fb">Azul Oscuro</option>
+      <option value="#d2f3ff|#005eff">Celeste</option>
+    </select>
+  </div>
 
   <div id="chat"></div>
   <div id="controls">
-    <input type="text" id="input" placeholder="Escribe tu mensaje..." />
+    <input type="text" id="input" placeholder="Escribe tu mensaje..." autocomplete="off" />
     <button id="send">Enviar</button>
   </div>
-
   <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-
   <script>
+    // Animación de fondo gradiente
+    document.body.style.backgroundSize = "200% 200%";
+
     const chat = document.getElementById("chat");
     const input = document.getElementById("input");
     const send = document.getElementById("send");
     const popup = document.getElementById("popup");
     const blup = document.getElementById("blup");
+
+    // Mini ventana configuración
+    const settingsBtn = document.getElementById("settings-btn");
+    const settingsModal = document.getElementById("settings-modal");
+    const settingsClose = document.getElementById("settings-close");
+    settingsBtn.onclick = () => {
+      settingsModal.style.display = "block";
+      settingsBtn.style.display = "none";
+    };
+    settingsClose.onclick = () => {
+      settingsModal.style.display = "none";
+      settingsBtn.style.display = "flex";
+    };
+    // Cierra modal clic fuera
+    window.addEventListener("mousedown", e => {
+      if (settingsModal.style.display === "block" && !settingsModal.contains(e.target) && e.target !== settingsBtn) {
+        settingsModal.style.display = "none";
+        settingsBtn.style.display = "flex";
+      }
+    });
 
     document.getElementById("color").onchange = (e) =>
       document.documentElement.style.setProperty("--color-bubble", e.target.value);
@@ -167,22 +323,17 @@
       const [bg, border] = e.target.value.split("|");
       document.documentElement.style.setProperty("--input-bg", bg);
       document.documentElement.style.setProperty("--input-border", border);
-    };
-    
-    document.getElementById("inputstyle").onchange = (e) => {
-      const [bg, border] = e.target.value.split("|");
-      document.documentElement.style.setProperty("--input-bg", bg);
-      document.documentElement.style.setProperty("--input-border", border);
 
-      const textColor = bg === "#fff" ? "#444" : "white";
-      document.getElementById("input").style.color = textColor;
+      const textColor = bg === "#fff" || bg === "#d2f3ff" ? "#222" : "white";
+      input.style.color = textColor;
+      input.style.background = bg;
+      input.style.borderColor = border;
     };
 
     function getTime() {
       const now = new Date();
       return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
-
     function verifyState(sent, received, read) {
       if (!received) return "✓";
       if (read) return "<span style='color:#00ffff'>✓✓</span>";
@@ -205,9 +356,18 @@
       bubble.appendChild(footer);
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
+
+      // Animar burbuja al entrar
+      bubble.animate([
+        { opacity: 0, transform: "translateY(18px)" },
+        { opacity: 1, transform: "translateY(0)" }
+      ], {
+        duration: 420,
+        easing: "ease"
+      });
     }
 
-    send.onclick = async () => {
+    function sendMessage() {
       const msg = input.value.trim();
       if (!msg) return;
       input.value = "";
@@ -216,34 +376,71 @@
 
       addBubble(msg, "user", true, false, false);
 
-      try {
-        const res = await fetch("https://api.together.xyz/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer 97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "deepseek-ai/DeepSeek-V3",
-            messages: [{ role: "user", content: msg }],
-          }),
-        });
-
+      fetch("https://api.together.xyz/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer 97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "deepseek-ai/DeepSeek-V3",
+          messages: [{ role: "user", content: msg }],
+        }),
+      })
+      .then(res => {
         if (!res.ok) throw new Error("Sin conexión");
-
-        const data = await res.json();
+        return res.json();
+      })
+      .then(data => {
         let texto = data.choices[0].message.content || "";
         blup.play();
         addBubble(texto, "gabo");
-      } catch (e) {
+      })
+      .catch(() => {
         popup.style.display = "block";
         setTimeout(() => (popup.style.display = "none"), 4000);
         addBubble("No se pudo entregar el mensaje", "user", true, false, false);
-      }
+      })
+      .finally(() => {
+        send.disabled = false;
+        send.textContent = "Enviar";
+      });
+    }
 
-      send.disabled = false;
-      send.textContent = "Enviar";
+    send.onclick = sendMessage;
+    input.onkeydown = function(e){
+      if (e.key === "Enter") sendMessage();
     };
+
+    // Animaciones extra: focus en input, blur al enviar
+    input.addEventListener('focus', () => {
+      input.style.boxShadow = "0 0 0 2px #00c6fb";
+    });
+    input.addEventListener('blur', () => {
+      input.style.boxShadow = "0 2px 8px 0 rgba(0, 54, 162, 0.12)";
+    });
+
+    // Animación de apertura de chat
+    window.onload = () => {
+      chat.animate([
+        { opacity: 0, transform: "scale(0.97)" },
+        { opacity: 1, transform: "scale(1)" }
+      ], {
+        duration: 650,
+        easing: "ease"
+      });
+    };
+
+    // Mensaje de bienvenida animado
+    setTimeout(() => {
+      addBubble("👋 ¡Hola! Soy <b>Gabo</b>, tu asistente AI.<br>¿En qué puedo ayudarte hoy?");
+    }, 500);
+
+    // Para mejorar experiencia en móviles: scroll al input al abrir teclado
+    input.addEventListener("focus", () => {
+      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 350);
+    });
   </script>
 </body>
 </html>
+```
