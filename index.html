@@ -12,13 +12,16 @@
       --gabo-bg: #fff;            /* WhatsApp bot bubble */
       --user-color: #222;
       --gabo-color: #222;
-      --input-bg: #f7f7f7;
+      --input-bg: #fff;
       --input-border: #ececec;
       --main-bg: #e5ddd5;
       --accent: #075e54;
+      --header-bg: #075e54;
+      --header-color: #fff;
       --border-radius: 22px;
       --bubble-small: 13px;
       --bubble-padding: 10px 18px;
+      --slide-time: 400ms;
     }
 
     body {
@@ -42,15 +45,36 @@
       position: relative;
       height: 100vh;
       max-width: 100vw;
+      background: var(--main-bg);
+    }
+
+    /* Encabezado simulado tipo WhatsApp */
+    #chat-header {
+      width: 100%;
+      background: var(--header-bg);
+      color: var(--header-color);
+      padding: 14px 20px 12px 16px;
+      font-size: 1.14rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      box-shadow: 0 2px 8px #075e5412;
+      user-select: none;
+      z-index: 10;
     }
 
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 9px 6px 0 6px;
+      padding: 14px 9px 0 9px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
       min-height: 0;
       background: transparent;
       z-index: 1;
@@ -58,7 +82,7 @@
 
     .bubble {
       max-width: 80vw;
-      margin: 1.5px 0;
+      margin: 2px 0;
       padding: var(--bubble-padding);
       border-radius: var(--border-radius);
       font-size: var(--bubble-small);
@@ -67,7 +91,8 @@
       box-shadow: 0 0.5px 3px #0002;
       position: relative;
       line-height: 1.45;
-      animation: fadeIn 0.5s;
+      animation-duration: var(--slide-time);
+      animation-fill-mode: both;
     }
 
     .user {
@@ -78,6 +103,7 @@
       border-bottom-left-radius: var(--border-radius);
       border-top-left-radius: var(--border-radius);
       border-top-right-radius: var(--border-radius);
+      animation-name: slideInRight;
     }
 
     .gabo {
@@ -88,6 +114,16 @@
       border-bottom-right-radius: var(--border-radius);
       border-top-right-radius: var(--border-radius);
       border-top-left-radius: var(--border-radius);
+      animation-name: slideInLeft;
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px);}
+      to   { opacity: 1; transform: translateX(0);}
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px);}
+      to   { opacity: 1; transform: translateX(0);}
     }
 
     .footer {
@@ -102,7 +138,7 @@
 
     #controls {
       display: flex;
-      padding: 8px 5px 8px 5px;
+      padding: 10px 8px;
       background: #fff;
       border-top: 1px solid var(--input-border);
       gap: 7px;
@@ -119,15 +155,20 @@
 
     #input {
       flex: 1;
-      padding: 9px 13px;
+      padding: 10px 15px;
       font-size: 1rem;
-      border-radius: 8px;
+      border-radius: 18px;
       background: var(--input-bg);
       color: #222;
       border: 1.3px solid var(--input-border);
       outline: none;
       font-family: inherit;
       box-shadow: 0 1px 4px #0001;
+    }
+    #input::placeholder {
+      color: #aaa;
+      font-size: 1rem;
+      opacity: 1;
     }
 
     #send {
@@ -136,7 +177,7 @@
       background: var(--accent);
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 14px;
       cursor: pointer;
       font-size: 1.07rem;
       transition: background 0.3s;
@@ -148,106 +189,9 @@
       background: #128c7e;
     }
 
-    #settings-btn {
-      position: absolute;
-      top: 11px;
-      right: 17px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 33px;
-      height: 33px;
-      font-size: 1.18rem;
-      cursor: pointer;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 10px #075e5412;
-      transition: background 0.2s;
-    }
-    #settings-btn:hover { background: #128c7e; }
-
-    #settings-modal {
-      position: fixed;
-      top: 44px;
-      right: 16px;
-      width: 210px;
-      background: #fff;
-      color: #222;
-      border-radius: 13px;
-      box-shadow: 0 6px 24px #075e5412;
-      padding: 0.9rem 0.7rem 0.6rem 0.7rem;
-      z-index: 100;
-      display: none;
-      animation: popupAnim 0.4s;
-      font-size: 0.93rem;
-    }
-    @keyframes popupAnim {
-      from {opacity: 0; transform: translateY(-20px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-    #settings-modal h3 {
-      margin-top: 0;
-      font-size: 1rem;
-      text-align: center;
-      letter-spacing: 0.03em;
-      margin-bottom: 0.5em;
-      font-weight: 500;
-      color: var(--accent);
-    }
-    #settings-modal label {
-      margin: 6px 0 2px 0;
-      display: block;
-      font-size: 0.98em;
-      font-weight: 500;
-      color: #128c7e;
-    }
-    #settings-modal select, #settings-modal input[type="color"] {
-      background: #f7f7f7;
-      color: #222;
-      border: 1px solid #ececec;
-      margin: 3px 0 9px 0;
-      border-radius: 6px;
-      width: 100%;
-      padding: 4px 3px;
-      font-size: 0.97em;
-      font-family: inherit;
-    }
-    #settings-close {
-      position: absolute;
-      top: 7px;
-      right: 9px;
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 1.08rem;
-      cursor: pointer;
-      font-weight: bold;
-      padding: 0;
-      z-index: 110;
-      transition: color 0.2s;
-    }
-    #settings-close:hover { color: #128c7e; }
-    #delete-history-btn {
-      margin-top: 5px;
-      background: #ff4444;
-      color: #fff;
-      border: none;
-      border-radius: 7px;
-      font-size: 0.93em;
-      padding: 0.39em 0.9em;
-      cursor: pointer;
-      font-weight: bold;
-      width: 100%;
-      box-shadow: 0 2px 8px #0036a244;
-      transition: background 0.18s;
-    }
-    #delete-history-btn:hover { background: #e20000; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px);}
-      to { opacity: 1; transform: translateY(0);}
+    /* Eliminar controles de sistema */
+    #settings-btn, #settings-modal {
+      display: none !important;
     }
 
     /* Modo minimalista en móviles */
@@ -265,58 +209,35 @@
         padding: 4px 2px 0 2px;
         gap: 2px;
       }
-      #settings-modal {
-        right: 6px;
-        width: 95vw;
-        min-width: 0;
-        max-width: 360px;
-        top: 40px;
-        font-size: 0.92rem;
-      }
-      #settings-btn {
-        right: 6px;
-        top: 5px;
-        width: 28px;
-        height: 28px;
-        font-size: 1rem;
+      #chat-header {
+        font-size: 1.03rem;
+        padding: 10px 12px 9px 10px;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
       }
       #controls {
-        padding: 5px 2px;
+        padding: 7px 3px;
       }
       #input {
         font-size: 0.98rem;
         padding: 6px 10px;
+        border-radius: 14px;
       }
       #send {
         font-size: 0.98rem;
         padding: 0 12px;
+        border-radius: 10px;
       }
     }
   </style>
 </head>
 <body>
   <div id="main">
+    <div id="chat-header">Chat de IA</div>
     <div id="popup"></div>
-    <button id="settings-btn" title="Configuración">⚙️</button>
-    <div id="settings-modal">
-      <button id="settings-close" title="Cerrar">&times;</button>
-      <h3>Temas de Chat</h3>
-      <label for="theme">Tema:</label>
-      <select id="theme">
-        <option value="default">WhatsApp</option>
-        <option value="mint">Menta</option>
-        <option value="pink">Rosa</option>
-        <option value="midnight">Oscuro</option>
-        <option value="sun">Sol</option>
-        <option value="aqua">Aqua</option>
-      </select>
-      <label for="accentcolor">Color principal:</label>
-      <input type="color" id="accentcolor" value="#075e54" />
-      <button id="delete-history-btn">🗑️ Borrar chat</button>
-    </div>
     <div id="chat"></div>
     <div id="controls">
-      <input type="text" id="input" placeholder="Escribe tu mensaje..." autocomplete="off" />
+      <input type="text" id="input" placeholder="Escribe un mensaje..." autocomplete="off" />
       <button id="send">Enviar</button>
     </div>
     <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
@@ -344,94 +265,6 @@
     const popup = document.getElementById("popup");
     const blup = document.getElementById("blup");
 
-    // Configuración
-    const settingsBtn = document.getElementById("settings-btn");
-    const settingsModal = document.getElementById("settings-modal");
-    const settingsClose = document.getElementById("settings-close");
-    const deleteHistoryBtn = document.getElementById("delete-history-btn");
-    const themeSel = document.getElementById("theme");
-    const accentColorSel = document.getElementById("accentcolor");
-
-    // Temas personalizados
-    const themes = {
-      default: {
-        '--user-bg': '#dcf8c6',
-        '--gabo-bg': '#fff',
-        '--main-bg': '#e5ddd5',
-        '--accent': '#075e54',
-        '--user-color': '#222',
-        '--gabo-color': '#222'
-      },
-      mint: {
-        '--user-bg': '#c9ffe5',
-        '--gabo-bg': '#fff',
-        '--main-bg': '#e0f7fa',
-        '--accent': '#00b894',
-        '--user-color': '#222',
-        '--gabo-color': '#222'
-      },
-      pink: {
-        '--user-bg': '#ffdde8',
-        '--gabo-bg': '#fff',
-        '--main-bg': '#ffe0ed',
-        '--accent': '#e040fb',
-        '--user-color': '#222',
-        '--gabo-color': '#222'
-      },
-      midnight: {
-        '--user-bg': '#313131',
-        '--gabo-bg': '#181818',
-        '--main-bg': '#222',
-        '--accent': '#607d8b',
-        '--user-color': '#f7f7f7',
-        '--gabo-color': '#f7f7f7'
-      },
-      sun: {
-        '--user-bg': '#fff7b2',
-        '--gabo-bg': '#fff',
-        '--main-bg': '#fffde4',
-        '--accent': '#fbc02d',
-        '--user-color': '#222',
-        '--gabo-color': '#222'
-      },
-      aqua: {
-        '--user-bg': '#c2e7ff',
-        '--gabo-bg': '#fff',
-        '--main-bg': '#e0f7fa',
-        '--accent': '#00bcd4',
-        '--user-color': '#222',
-        '--gabo-color': '#222'
-      }
-    };
-
-    function applyTheme(themeName) {
-      const theme = themes[themeName] || themes['default'];
-      Object.entries(theme).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(key, value);
-      });
-      document.documentElement.style.setProperty('--accent', accentColorSel.value);
-      settingsBtn.style.background = accentColorSel.value;
-      settingsClose.style.color = accentColorSel.value;
-    }
-    themeSel.onchange = () => applyTheme(themeSel.value);
-    accentColorSel.oninput = () => applyTheme(themeSel.value);
-
-    // Configuración modal
-    settingsBtn.onclick = () => {
-      settingsModal.style.display = "block";
-      settingsBtn.style.display = "none";
-    };
-    settingsClose.onclick = () => {
-      settingsModal.style.display = "none";
-      settingsBtn.style.display = "flex";
-    };
-    window.addEventListener("mousedown", e => {
-      if (settingsModal.style.display === "block" && !settingsModal.contains(e.target) && e.target !== settingsBtn) {
-        settingsModal.style.display = "none";
-        settingsBtn.style.display = "flex";
-      }
-    });
-
     // Renderizar historial
     let history = [];
     function loadAndRenderHistory() {
@@ -447,14 +280,6 @@
         });
       }
     }
-
-    // Eliminar historial
-    deleteHistoryBtn.onclick = () => {
-      if (confirm("¿Eliminar historial de chat?")) {
-        deleteHistory();
-        loadAndRenderHistory();
-      }
-    };
 
     // Utilidades burbuja/chat
     function getTime() {
@@ -487,14 +312,10 @@
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
 
-      // Animación entrada
-      bubble.animate([
-        { opacity: 0, transform: "translateY(12px)" },
-        { opacity: 1, transform: "translateY(0)" }
-      ], {
-        duration: 320,
-        easing: "ease"
-      });
+      // Animación entrada (slide in)
+      // Animación ya definida por clases .user y .gabo via animation-name
+      bubble.style.animationDuration = '400ms';
+      bubble.style.animationTimingFunction = 'ease';
 
       // Guardar en historial si no es carga inicial
       if (!noSave) {
@@ -558,7 +379,6 @@
 
     // Animación de apertura de chat y render historial
     window.onload = () => {
-      applyTheme(themeSel.value);
       loadAndRenderHistory();
     };
 
