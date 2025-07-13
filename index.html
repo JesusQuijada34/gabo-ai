@@ -131,18 +131,19 @@
 <body>
   <div id="popup">⚠️ Sin conexión a internet</div>
   <div id="settings">
-    <label>Color burbuja:</label>
-    <select id="color">
-      <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
-      <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
-      <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
-    </select>
-    <label>Estilo input:</label>
-    <select id="inputstyle">
-      <option value="#111|#00ffff">Oscuro Neón</option>
-      <option value="#fff|#0077cc">Claro Azul</option>
-    </select>
-  </div>
+  <label>Color burbuja:</label>
+  <select id="color">
+    <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
+    <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
+    <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
+  </select>
+
+  <label>Estilo input:</label>
+  <select id="inputstyle">
+    <option value="#111|#00ffff">Oscuro Neón</option>
+    <option value="#fff|#0077cc">Claro Azul</option>
+  </select>
+</div>
 
   <div id="chat"></div>
   <div id="controls">
@@ -166,6 +167,15 @@
       const [bg, border] = e.target.value.split("|");
       document.documentElement.style.setProperty("--input-bg", bg);
       document.documentElement.style.setProperty("--input-border", border);
+    };
+    
+    document.getElementById("inputstyle").onchange = (e) => {
+      const [bg, border] = e.target.value.split("|");
+      document.documentElement.style.setProperty("--input-bg", bg);
+      document.documentElement.style.setProperty("--input-border", border);
+
+      const textColor = bg === "#fff" ? "#444" : "white";
+      document.getElementById("input").style.color = textColor;
     };
 
     function getTime() {
