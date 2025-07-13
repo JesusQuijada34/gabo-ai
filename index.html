@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Influent Gabo AI Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
@@ -13,15 +14,18 @@
       --bubble-radius: 18px;
       --settings-bg: linear-gradient(140deg, #0036a2 40%, #00c6fb 100%);
       --settings-shadow: 0 8px 32px 0 rgba(0, 54, 162, 0.37);
+      --sidebar-bg: #021f3a;
+      --sidebar-active: #00c6fb44;
+      --sidebar-width: 180px;
     }
     body {
       margin: 0;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
       min-height: 100vh;
       background: linear-gradient(135deg, #001b3a 0%, #2473c8 50%, #00c6fb 100%);
       color: #fff;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       transition: background 1s;
       animation: gradientMove 20s ease infinite;
       overflow: hidden;
@@ -32,23 +36,78 @@
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
-    #popup {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: #ff4444;
-      color: white;
+    /* Sidebar temas */
+    #sidebar {
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 0.7rem 0.5rem;
+      box-shadow: 2px 0 8px 0 rgba(0, 54, 162, 0.09);
+      z-index: 5;
+      min-width: 120px;
+      gap: 0.7rem;
+    }
+    #sidebar h2 {
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.7rem 0.2rem;
+      color: #00c6fb;
+    }
+    .tema-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .tema {
+      cursor: pointer;
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      margin-bottom: 0.15rem;
+      background: none;
+      border: none;
+      color: inherit;
+      text-align: left;
+      font-size: 0.98rem;
+      transition: background 0.2s;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .tema.active {
+      background: var(--sidebar-active);
+      font-weight: 500;
+      color: #fff;
+    }
+    .tema .close {
+      margin-left: auto;
+      font-size: 0.9em;
+      color: #ccc;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 0.2em;
+      border-radius: 3px;
+      transition: color 0.2s;
+    }
+    .tema .close:hover { color: #ff4444; }
+    #add-tema {
+      margin: 0.6rem 0 0.2rem 0.2rem;
+      background: #00c6fb;
+      color: #031d3d;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
       font-weight: bold;
-      text-align: center;
-      padding: 10px;
-      z-index: 999;
-      display: none;
-      animation: slideDown 0.4s;
+      cursor: pointer;
+      padding: 0.5rem 0.9rem;
+      transition: background 0.2s;
     }
-    @keyframes slideDown {
-      from {transform: translateY(-50px); opacity: 0;}
-      to {transform: translateY(0); opacity: 1;}
-    }
+    #add-tema:hover { background: #005eff; color: #fff; }
+
+    /* Main area */
     #main {
       display: flex;
       flex-direction: column;
@@ -74,19 +133,57 @@
       padding: 1rem 1.3rem;
       border-radius: var(--bubble-radius);
       background: var(--color-bubble);
-      color: black;
+      color: #222;
       position: relative;
       animation: fadeIn 0.5s;
       white-space: pre-wrap;
       box-shadow: 0 4px 18px 0 rgba(0, 54, 162, 0.25);
-      font-size: 1.08rem;
+      font-size: 0.95rem;
+      word-break: break-word;
+      overflow-wrap: anywhere;
       transition: transform 0.15s;
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+      line-height: 1.55;
     }
-    .bubble:hover {
-      transform: scale(1.03);
+    .bubble code {
+      font-family: 'Roboto Mono', 'Menlo', 'Monaco', monospace;
+      font-size: 0.88rem;
+      background: #222;
+      color: #00c6fb;
+      border-radius: 5px;
+      padding: 0.14em 0.32em;
+      box-shadow: 0 1px 4px #0036a277;
+    }
+    .bubble pre {
+      background: #181818;
+      color: #00eaff;
+      font-family: 'Roboto Mono', 'Menlo', 'Monaco', monospace;
+      font-size: 0.93rem;
+      border-radius: 7px;
+      padding: 1em 1.3em 1.3em 1em;
+      margin: 0.5em 0 0.2em 0;
+      overflow-x: auto;
+      position: relative;
+      box-shadow: 0 2px 12px #0036a244;
+      white-space: pre;
+      word-break: break-all;
+      max-width: 100%;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 9px;
+      right: 16px;
+      background: #005eff;
+      color: #fff;
+      border: none;
+      font-size: 0.97rem;
+      border-radius: 7px;
+      cursor: pointer;
+      padding: 0.22em 0.8em;
       z-index: 2;
-      box-shadow: 0 8px 32px 0 rgba(0, 54, 162, 0.43);
+      transition: background 0.2s;
     }
+    .copy-btn:hover { background: #00c6fb; color: #005eff; }
     .user {
       align-self: flex-end;
       border-top-right-radius: 0;
@@ -100,11 +197,13 @@
       border-top-left-radius: 0;
     }
     .footer {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       opacity: 0.7;
       margin-top: 5px;
       display: flex;
       justify-content: space-between;
+      font-family: inherit;
+      color: #555;
     }
     #controls {
       display: flex;
@@ -125,7 +224,7 @@
     #input {
       flex: 1;
       padding: 0.9rem;
-      font-size: 1.1rem;
+      font-size: 1.03rem;
       border-radius: 10px;
       background: var(--input-bg);
       color: white;
@@ -133,6 +232,7 @@
       outline: none;
       transition: background 0.4s, color 0.4s, border 0.4s;
       box-shadow: 0 2px 8px 0 rgba(0, 54, 162, 0.12);
+      font-family: inherit;
     }
     #input:focus {
       border-color: #00c6fb;
@@ -150,6 +250,7 @@
       font-size: 1.08rem;
       transition: background 0.3s, color 0.3s, box-shadow 0.3s;
       box-shadow: 0 2px 8px 0 rgba(0, 54, 162, 0.1);
+      font-family: inherit;
     }
     #send:active {
       background: linear-gradient(45deg, #0055ff, #00ffff);
@@ -243,12 +344,33 @@
     #settings-close:hover {
       color: #00ffff;
     }
+    #delete-history-btn {
+      margin-top: 9px;
+      background: #ff4444;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.95em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      box-shadow: 0 2px 8px #0036a244;
+      transition: background 0.2s;
+    }
+    #delete-history-btn:hover { background: #e20000; }
     /* Animación de entrada a las burbujas */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(18px);}
       to { opacity: 1; transform: translateY(0);}
     }
     /* Responsive */
+    @media (max-width: 700px) {
+      #sidebar { width: 65px; min-width: 0; padding: 0.3rem 0.2rem; }
+      #sidebar h2 { font-size: 0.91rem; }
+      #sidebar .tema { font-size: 0.9rem; padding: 0.3rem 0.2rem; }
+      #main { padding-left: 0 !important; }
+    }
     @media (max-width: 600px) {
       #settings-modal {
         right: 10px;
@@ -271,52 +393,64 @@
   </style>
 </head>
 <body>
-  <div id="popup">⚠️ Sin conexión a internet</div>
-
-  <button id="settings-btn" title="Configuración">⚙️</button>
-  <div id="settings-modal">
-    <button id="settings-close" title="Cerrar">&times;</button>
-    <h3>Configuración de Chat</h3>
-    <label for="color">Color burbuja:</label>
-    <select id="color">
-      <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
-      <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
-      <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
-      <option value="linear-gradient(145deg, #f5bb00, #00c6fb)">Amarillo Cielo</option>
-      <option value="linear-gradient(145deg, #ff7b00, #ffef00)">Naranja Sol</option>
-      <option value="linear-gradient(145deg, #222, #444)">Gris Oscuro</option>
-      <option value="linear-gradient(145deg, #c2e7ff, #a8f0e6)">Aqua Pastel</option>
-      <option value="linear-gradient(145deg, #c800ff, #ff0080)">Morado Intenso</option>
-      <option value="linear-gradient(145deg, #ffe0e0, #fff200)">Rosado Amarillo</option>
-    </select>
-    <label for="inputstyle">Estilo input:</label>
-    <select id="inputstyle">
-      <option value="#111|#00ffff">Oscuro Neón</option>
-      <option value="#fff|#0077cc">Claro Azul</option>
-      <option value="#002040|#00c6fb">Azul Oscuro</option>
-      <option value="#d2f3ff|#005eff">Celeste</option>
-      <option value="#ffe0e0|#ff0080">Rosado Pastel</option>
-      <option value="#222|#444">Gris Oscuro</option>
-      <option value="#ffffe0|#ffd700">Amarillo Claro</option>
-      <option value="#c2e7ff|#a8f0e6">Aqua Pastel</option>
-    </select>
+  <div id="sidebar">
+    <h2>Temas</h2>
+    <div class="tema-list" id="tema-list"></div>
+    <button id="add-tema">+ Nuevo tema</button>
   </div>
-
   <div id="main">
+    <div id="popup">⚠️ Sin conexión a internet</div>
+    <button id="settings-btn" title="Configuración">⚙️</button>
+    <div id="settings-modal">
+      <button id="settings-close" title="Cerrar">&times;</button>
+      <h3>Configuración de Chat</h3>
+      <label for="color">Color burbuja:</label>
+      <select id="color">
+        <option value="linear-gradient(145deg, #005eff, #00ffff)">Azul Neón</option>
+        <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
+        <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
+        <option value="linear-gradient(145deg, #f5bb00, #00c6fb)">Amarillo Cielo</option>
+        <option value="linear-gradient(145deg, #ff7b00, #ffef00)">Naranja Sol</option>
+        <option value="linear-gradient(145deg, #222, #444)">Gris Oscuro</option>
+        <option value="linear-gradient(145deg, #c2e7ff, #a8f0e6)">Aqua Pastel</option>
+        <option value="linear-gradient(145deg, #c800ff, #ff0080)">Morado Intenso</option>
+        <option value="linear-gradient(145deg, #ffe0e0, #fff200)">Rosado Amarillo</option>
+      </select>
+      <label for="inputstyle">Estilo input:</label>
+      <select id="inputstyle">
+        <option value="#111|#00ffff">Oscuro Neón</option>
+        <option value="#fff|#0077cc">Claro Azul</option>
+        <option value="#002040|#00c6fb">Azul Oscuro</option>
+        <option value="#d2f3ff|#005eff">Celeste</option>
+        <option value="#ffe0e0|#ff0080">Rosado Pastel</option>
+        <option value="#222|#444">Gris Oscuro</option>
+        <option value="#ffffe0|#ffd700">Amarillo Claro</option>
+        <option value="#c2e7ff|#a8f0e6">Aqua Pastel</option>
+      </select>
+      <button id="delete-history-btn">🗑️ Eliminar historial</button>
+    </div>
     <div id="chat"></div>
     <div id="controls">
       <input type="text" id="input" placeholder="Escribe tu mensaje..." autocomplete="off" />
       <button id="send">Enviar</button>
     </div>
+    <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   </div>
-  <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <script>
-    // Animación de fondo gradiente
     document.body.style.backgroundSize = "200% 200%";
 
-    // Historial por dispositivo usando localStorage
+    // Temas en localStorage
+    const TEMAS_KEY = "gabo_temas";
+    function loadTemas() {
+      try { return JSON.parse(localStorage.getItem(TEMAS_KEY)) || []; }
+      catch { return []; }
+    }
+    function saveTemas(temas) {
+      localStorage.setItem(TEMAS_KEY, JSON.stringify(temas));
+    }
+
+    // Dispositivo
     function getDeviceName() {
-      // Usa el nombre del navegador y un hash de la pantalla para distinguir dispositivos
       let name = localStorage.getItem("gabo_device_name");
       if (!name) {
         name = navigator.userAgent.replace(/\W+/g, "_") + "_" + screen.width + "x" + screen.height;
@@ -324,19 +458,21 @@
       }
       return name;
     }
-
     const deviceName = getDeviceName();
-    const HISTORY_KEY = "gabo_historial_" + deviceName;
 
-    function saveHistory(history) {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    // Historial por tema y dispositivo
+    function historyKeyForTema(temaId) {
+      return "gabo_historial_" + deviceName + "_" + temaId;
     }
-    function loadHistory() {
-      try {
-        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
-      } catch {
-        return [];
-      }
+    function saveHistory(temaId, history) {
+      localStorage.setItem(historyKeyForTema(temaId), JSON.stringify(history));
+    }
+    function loadHistory(temaId) {
+      try { return JSON.parse(localStorage.getItem(historyKeyForTema(temaId))) || []; }
+      catch { return []; }
+    }
+    function deleteHistory(temaId) {
+      localStorage.removeItem(historyKeyForTema(temaId));
     }
 
     // UI vars
@@ -345,11 +481,15 @@
     const send = document.getElementById("send");
     const popup = document.getElementById("popup");
     const blup = document.getElementById("blup");
+    const temaListDiv = document.getElementById("tema-list");
+    const addTemaBtn = document.getElementById("add-tema");
 
-    // Mini ventana configuración
+    // Configuración
     const settingsBtn = document.getElementById("settings-btn");
     const settingsModal = document.getElementById("settings-modal");
     const settingsClose = document.getElementById("settings-close");
+    const deleteHistoryBtn = document.getElementById("delete-history-btn");
+
     settingsBtn.onclick = () => {
       settingsModal.style.display = "block";
       settingsBtn.style.display = "none";
@@ -358,7 +498,6 @@
       settingsModal.style.display = "none";
       settingsBtn.style.display = "flex";
     };
-    // Cierra modal clic fuera
     window.addEventListener("mousedown", e => {
       if (settingsModal.style.display === "block" && !settingsModal.contains(e.target) && e.target !== settingsBtn) {
         settingsModal.style.display = "none";
@@ -373,13 +512,89 @@
       const [bg, border] = e.target.value.split("|");
       document.documentElement.style.setProperty("--input-bg", bg);
       document.documentElement.style.setProperty("--input-border", border);
-
       const textColor = bg === "#fff" || bg === "#d2f3ff" || bg === "#ffe0e0" || bg === "#ffffe0" ? "#222" : "white";
       input.style.color = textColor;
       input.style.background = bg;
       input.style.borderColor = border;
     };
 
+    // Temas barra lateral
+    let temas = loadTemas();
+    let activeTemaId = temas.length ? temas[0].id : null;
+    function renderTemas() {
+      temaListDiv.innerHTML = "";
+      temas.forEach((t, idx) => {
+        const div = document.createElement("button");
+        div.className = "tema" + (t.id === activeTemaId ? " active" : "");
+        div.textContent = t.nombre;
+        div.onclick = () => { selectTema(t.id); };
+        // Eliminar tema
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "close";
+        closeBtn.innerHTML = "✖";
+        closeBtn.title = "Eliminar tema";
+        closeBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (confirm("¿Eliminar este tema y su historial?")) {
+            if (t.id === activeTemaId && temas.length > 1) {
+              let nextTema = temas.find(tm => tm.id !== t.id);
+              selectTema(nextTema.id);
+            }
+            deleteHistory(t.id);
+            temas = temas.filter(tm => tm.id !== t.id);
+            saveTemas(temas);
+            renderTemas();
+            if (!temas.length) {
+              activeTemaId = null;
+              chat.innerHTML = "";
+            }
+          }
+        };
+        div.appendChild(closeBtn);
+        temaListDiv.appendChild(div);
+      });
+    }
+    function selectTema(id) {
+      if (activeTemaId === id) return;
+      activeTemaId = id;
+      renderTemas();
+      loadAndRenderHistory();
+    }
+    function addTema() {
+      let nombre = prompt("Nombre del nuevo tema:");
+      if (!nombre) return;
+      let newTema = { id: "tema_" + Date.now(), nombre };
+      temas.push(newTema);
+      saveTemas(temas);
+      selectTema(newTema.id);
+    }
+    addTemaBtn.onclick = addTema;
+
+    // Renderiza historial por tema
+    let history = [];
+    function loadAndRenderHistory() {
+      chat.innerHTML = "";
+      history = activeTemaId ? loadHistory(activeTemaId) : [];
+      if (!history.length && activeTemaId) {
+        setTimeout(() => {
+          addBubble("👋 ¡Hola! Soy <b>Gabo</b>, tu asistente AI.<br>¿En qué puedo ayudarte hoy?", "gabo", true, true, false, true);
+        }, 400);
+      } else {
+        history.forEach(msg => {
+          addBubble(msg.text, msg.role, msg.sent, msg.received, msg.read, true);
+        });
+      }
+    }
+
+    // Eliminar historial del tema actual
+    deleteHistoryBtn.onclick = () => {
+      if (activeTemaId && confirm("¿Eliminar historial de este tema?")) {
+        deleteHistory(activeTemaId);
+        loadAndRenderHistory();
+      }
+    };
+
+    // Utilidades burbuja/chat
     function getTime() {
       const now = new Date();
       return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -389,14 +604,28 @@
       if (read) return "<span style='color:#00ffff'>✓✓</span>";
       return "✓✓";
     }
-
-    // Historial en memoria
-    let history = loadHistory();
-
     function addBubble(text, role = "gabo", sent = true, received = true, read = false, noSave) {
       const bubble = document.createElement("div");
       bubble.className = `bubble ${role}`;
-      bubble.innerHTML = marked.parse(text.replace(/DeepSeek/gi, "Gabo"));
+
+      // Procesar markdown y bloques de código para copiar
+      let html = marked.parse(text.replace(/DeepSeek/gi, "Gabo"));
+      bubble.innerHTML = html;
+
+      // Buscar bloques de código y agregar botón copiar
+      bubble.querySelectorAll("pre > code").forEach(codeBlock => {
+        const pre = codeBlock.parentNode;
+        pre.style.position = "relative";
+        const btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.textContent = "Copiar";
+        btn.onclick = () => {
+          navigator.clipboard.writeText(codeBlock.textContent);
+          btn.textContent = "Copiado!";
+          setTimeout(() => btn.textContent = "Copiar", 1200);
+        };
+        pre.appendChild(btn);
+      });
 
       const footer = document.createElement("div");
       footer.className = "footer";
@@ -420,13 +649,17 @@
       });
 
       // Guardar en historial si no es carga inicial
-      if (!noSave) {
+      if (!noSave && activeTemaId) {
         history.push({ text, role, time: Date.now(), sent, received, read });
-        saveHistory(history);
+        saveHistory(activeTemaId, history);
       }
     }
 
     function sendMessage() {
+      if (!activeTemaId) {
+        alert("Primero crea o selecciona un tema.");
+        return;
+      }
       const msg = input.value.trim();
       if (!msg) return;
       input.value = "";
@@ -479,27 +712,11 @@
       input.style.boxShadow = "0 2px 8px 0 rgba(0, 54, 162, 0.12)";
     });
 
-    // Animación de apertura de chat
+    // Animación de apertura de chat y render temas/historial
     window.onload = () => {
-      chat.animate([
-        { opacity: 0, transform: "scale(0.97)" },
-        { opacity: 1, transform: "scale(1)" }
-      ], {
-        duration: 650,
-        easing: "ease"
-      });
-      // Cargar historial
-      history.forEach(msg => {
-        addBubble(msg.text, msg.role, msg.sent, msg.received, msg.read, true);
-      });
+      renderTemas();
+      if (activeTemaId) loadAndRenderHistory();
     };
-
-    // Mensaje de bienvenida animado si no hay historial
-    if (history.length === 0) {
-      setTimeout(() => {
-        addBubble("👋 ¡Hola! Soy <b>Gabo</b>, tu asistente AI.<br>¿En qué puedo ayudarte hoy?");
-      }, 500);
-    }
 
     // Para mejorar experiencia en móviles: scroll al input al abrir teclado
     input.addEventListener("focus", () => {
