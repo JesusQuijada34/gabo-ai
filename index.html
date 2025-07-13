@@ -14,9 +14,6 @@
       --bubble-radius: 18px;
       --settings-bg: linear-gradient(140deg, #0036a2 40%, #00c6fb 100%);
       --settings-shadow: 0 8px 32px 0 rgba(0, 54, 162, 0.37);
-      --sidebar-bg: #021f3a;
-      --sidebar-active: #00c6fb44;
-      --sidebar-width: 180px;
     }
     body {
       margin: 0;
@@ -25,7 +22,7 @@
       background: linear-gradient(135deg, #001b3a 0%, #2473c8 50%, #00c6fb 100%);
       color: #fff;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       transition: background 1s;
       animation: gradientMove 20s ease infinite;
       overflow: hidden;
@@ -36,77 +33,6 @@
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
-    /* Sidebar temas */
-    #sidebar {
-      width: var(--sidebar-width);
-      background: var(--sidebar-bg);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 0.7rem 0.5rem;
-      box-shadow: 2px 0 8px 0 rgba(0, 54, 162, 0.09);
-      z-index: 5;
-      min-width: 120px;
-      gap: 0.7rem;
-    }
-    #sidebar h2 {
-      font-size: 1rem;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      margin: 0 0 0.7rem 0.2rem;
-      color: #00c6fb;
-    }
-    .tema-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-    .tema {
-      cursor: pointer;
-      padding: 0.45rem 0.8rem;
-      border-radius: 8px;
-      margin-bottom: 0.15rem;
-      background: none;
-      border: none;
-      color: inherit;
-      text-align: left;
-      font-size: 0.98rem;
-      transition: background 0.2s;
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-    }
-    .tema.active {
-      background: var(--sidebar-active);
-      font-weight: 500;
-      color: #fff;
-    }
-    .tema .close {
-      margin-left: auto;
-      font-size: 0.9em;
-      color: #ccc;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0 0.2em;
-      border-radius: 3px;
-      transition: color 0.2s;
-    }
-    .tema .close:hover { color: #ff4444; }
-    #add-tema {
-      margin: 0.6rem 0 0.2rem 0.2rem;
-      background: #00c6fb;
-      color: #031d3d;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      padding: 0.5rem 0.9rem;
-      transition: background 0.2s;
-    }
-    #add-tema:hover { background: #005eff; color: #fff; }
-
     /* Main area */
     #main {
       display: flex;
@@ -359,16 +285,11 @@
       transition: background 0.2s;
     }
     #delete-history-btn:hover { background: #e20000; }
-    /* Animación de entrada a las burbujas */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(18px);}
       to { opacity: 1; transform: translateY(0);}
     }
-    /* Responsive */
     @media (max-width: 700px) {
-      #sidebar { width: 65px; min-width: 0; padding: 0.3rem 0.2rem; }
-      #sidebar h2 { font-size: 0.91rem; }
-      #sidebar .tema { font-size: 0.9rem; padding: 0.3rem 0.2rem; }
       #main { padding-left: 0 !important; }
     }
     @media (max-width: 600px) {
@@ -393,11 +314,6 @@
   </style>
 </head>
 <body>
-  <div id="sidebar">
-    <h2>Temas</h2>
-    <div class="tema-list" id="tema-list"></div>
-    <button id="add-tema">+ Nuevo tema</button>
-  </div>
   <div id="main">
     <div id="popup"></div>
     <button id="settings-btn" title="Configuración">⚙️</button>
@@ -439,40 +355,17 @@
   <script>
     document.body.style.backgroundSize = "200% 200%";
 
-    // Temas en localStorage
-    const TEMAS_KEY = "gabo_temas";
-    function loadTemas() {
-      try { return JSON.parse(localStorage.getItem(TEMAS_KEY)) || []; }
+    // Simple historial localStorage, multiplataforma
+    const HISTORY_KEY = "gabo_historial_multiplataforma";
+    function saveHistory(history) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
       catch { return []; }
     }
-    function saveTemas(temas) {
-      localStorage.setItem(TEMAS_KEY, JSON.stringify(temas));
-    }
-
-    // Dispositivo
-    function getDeviceName() {
-      let name = localStorage.getItem("gabo_device_name");
-      if (!name) {
-        name = navigator.userAgent.replace(/\W+/g, "_") + "_" + screen.width + "x" + screen.height;
-        localStorage.setItem("gabo_device_name", name);
-      }
-      return name;
-    }
-    const deviceName = getDeviceName();
-
-    // Historial por tema y dispositivo
-    function historyKeyForTema(temaId) {
-      return "gabo_historial_" + deviceName + "_" + temaId;
-    }
-    function saveHistory(temaId, history) {
-      localStorage.setItem(historyKeyForTema(temaId), JSON.stringify(history));
-    }
-    function loadHistory(temaId) {
-      try { return JSON.parse(localStorage.getItem(historyKeyForTema(temaId))) || []; }
-      catch { return []; }
-    }
-    function deleteHistory(temaId) {
-      localStorage.removeItem(historyKeyForTema(temaId));
+    function deleteHistory() {
+      localStorage.removeItem(HISTORY_KEY);
     }
 
     // UI vars
@@ -481,8 +374,6 @@
     const send = document.getElementById("send");
     const popup = document.getElementById("popup");
     const blup = document.getElementById("blup");
-    const temaListDiv = document.getElementById("tema-list");
-    const addTemaBtn = document.getElementById("add-tema");
 
     // Configuración
     const settingsBtn = document.getElementById("settings-btn");
@@ -518,64 +409,12 @@
       input.style.borderColor = border;
     };
 
-    // Temas barra lateral
-    let temas = loadTemas();
-    let activeTemaId = temas.length ? temas[0].id : null;
-    function renderTemas() {
-      temaListDiv.innerHTML = "";
-      temas.forEach((t, idx) => {
-        const div = document.createElement("button");
-        div.className = "tema" + (t.id === activeTemaId ? " active" : "");
-        div.textContent = t.nombre;
-        div.onclick = () => { selectTema(t.id); };
-        // Eliminar tema
-        const closeBtn = document.createElement("button");
-        closeBtn.className = "close";
-        closeBtn.innerHTML = "✖";
-        closeBtn.title = "Eliminar tema";
-        closeBtn.onclick = (e) => {
-          e.stopPropagation();
-          if (confirm("¿Eliminar este tema y su historial?")) {
-            if (t.id === activeTemaId && temas.length > 1) {
-              let nextTema = temas.find(tm => tm.id !== t.id);
-              selectTema(nextTema.id);
-            }
-            deleteHistory(t.id);
-            temas = temas.filter(tm => tm.id !== t.id);
-            saveTemas(temas);
-            renderTemas();
-            if (!temas.length) {
-              activeTemaId = null;
-              chat.innerHTML = "";
-            }
-          }
-        };
-        div.appendChild(closeBtn);
-        temaListDiv.appendChild(div);
-      });
-    }
-    function selectTema(id) {
-      if (activeTemaId === id) return;
-      activeTemaId = id;
-      renderTemas();
-      loadAndRenderHistory();
-    }
-    function addTema() {
-      let nombre = prompt("Nombre del nuevo tema:");
-      if (!nombre) return;
-      let newTema = { id: "tema_" + Date.now(), nombre };
-      temas.push(newTema);
-      saveTemas(temas);
-      selectTema(newTema.id);
-    }
-    addTemaBtn.onclick = addTema;
-
-    // Renderiza historial por tema
+    // Renderiza historial
     let history = [];
     function loadAndRenderHistory() {
       chat.innerHTML = "";
-      history = activeTemaId ? loadHistory(activeTemaId) : [];
-      if (!history.length && activeTemaId) {
+      history = loadHistory();
+      if (!history.length) {
         setTimeout(() => {
           addBubble("👋 ¡Hola! Soy <b>Gabo</b>, tu asistente AI.<br>¿En qué puedo ayudarte hoy?", "gabo", true, true, false, true);
         }, 400);
@@ -586,10 +425,10 @@
       }
     }
 
-    // Eliminar historial del tema actual
+    // Eliminar historial
     deleteHistoryBtn.onclick = () => {
-      if (activeTemaId && confirm("¿Eliminar historial de este tema?")) {
-        deleteHistory(activeTemaId);
+      if (confirm("¿Eliminar historial de chat?")) {
+        deleteHistory();
         loadAndRenderHistory();
       }
     };
@@ -649,17 +488,13 @@
       });
 
       // Guardar en historial si no es carga inicial
-      if (!noSave && activeTemaId) {
+      if (!noSave) {
         history.push({ text, role, time: Date.now(), sent, received, read });
-        saveHistory(activeTemaId, history);
+        saveHistory(history);
       }
     }
 
     function sendMessage() {
-      if (!activeTemaId) {
-        alert("Primero crea o selecciona un tema.");
-        return;
-      }
       const msg = input.value.trim();
       if (!msg) return;
       input.value = "";
@@ -712,10 +547,9 @@
       input.style.boxShadow = "0 2px 8px 0 rgba(0, 54, 162, 0.12)";
     });
 
-    // Animación de apertura de chat y render temas/historial
+    // Animación de apertura de chat y render historial
     window.onload = () => {
-      renderTemas();
-      if (activeTemaId) loadAndRenderHistory();
+      loadAndRenderHistory();
     };
 
     // Para mejorar experiencia en móviles: scroll al input al abrir teclado
