@@ -25,6 +25,7 @@
       transition: background 1s;
       animation: gradientMove 20s ease infinite;
       overflow: hidden;
+      height: 100vh;
     }
     @keyframes gradientMove {
       0% {background-position: 0% 50%;}
@@ -47,6 +48,14 @@
     @keyframes slideDown {
       from {transform: translateY(-50px); opacity: 0;}
       to {transform: translateY(0); opacity: 1;}
+    }
+    #main {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      height: 100vh;
     }
     #chat {
       flex: 1;
@@ -103,10 +112,15 @@
       background: rgba(0,0,0,0.42);
       backdrop-filter: blur(12px);
       gap: 0.7rem;
-      z-index: 1;
+      z-index: 2;
       box-shadow: 0 -4px 18px 0 rgba(0, 54, 162, 0.12);
       border-top-left-radius: 22px;
       border-top-right-radius: 22px;
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin-top: auto;
     }
     #input {
       flex: 1;
@@ -269,6 +283,11 @@
       <option value="linear-gradient(145deg, #00ff88, #00ffc9)">Verde Menta</option>
       <option value="linear-gradient(145deg, #ff00cc, #9900ff)">Rosado Violeta</option>
       <option value="linear-gradient(145deg, #f5bb00, #00c6fb)">Amarillo Cielo</option>
+      <option value="linear-gradient(145deg, #ff7b00, #ffef00)">Naranja Sol</option>
+      <option value="linear-gradient(145deg, #222, #444)">Gris Oscuro</option>
+      <option value="linear-gradient(145deg, #c2e7ff, #a8f0e6)">Aqua Pastel</option>
+      <option value="linear-gradient(145deg, #c800ff, #ff0080)">Morado Intenso</option>
+      <option value="linear-gradient(145deg, #ffe0e0, #fff200)">Rosado Amarillo</option>
     </select>
     <label for="inputstyle">Estilo input:</label>
     <select id="inputstyle">
@@ -276,19 +295,51 @@
       <option value="#fff|#0077cc">Claro Azul</option>
       <option value="#002040|#00c6fb">Azul Oscuro</option>
       <option value="#d2f3ff|#005eff">Celeste</option>
+      <option value="#ffe0e0|#ff0080">Rosado Pastel</option>
+      <option value="#222|#444">Gris Oscuro</option>
+      <option value="#ffffe0|#ffd700">Amarillo Claro</option>
+      <option value="#c2e7ff|#a8f0e6">Aqua Pastel</option>
     </select>
   </div>
 
-  <div id="chat"></div>
-  <div id="controls">
-    <input type="text" id="input" placeholder="Escribe tu mensaje..." autocomplete="off" />
-    <button id="send">Enviar</button>
+  <div id="main">
+    <div id="chat"></div>
+    <div id="controls">
+      <input type="text" id="input" placeholder="Escribe tu mensaje..." autocomplete="off" />
+      <button id="send">Enviar</button>
+    </div>
   </div>
   <audio id="blup" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
   <script>
     // Animación de fondo gradiente
     document.body.style.backgroundSize = "200% 200%";
 
+    // Historial por dispositivo usando localStorage
+    function getDeviceName() {
+      // Usa el nombre del navegador y un hash de la pantalla para distinguir dispositivos
+      let name = localStorage.getItem("gabo_device_name");
+      if (!name) {
+        name = navigator.userAgent.replace(/\W+/g, "_") + "_" + screen.width + "x" + screen.height;
+        localStorage.setItem("gabo_device_name", name);
+      }
+      return name;
+    }
+
+    const deviceName = getDeviceName();
+    const HISTORY_KEY = "gabo_historial_" + deviceName;
+
+    function saveHistory(history) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+    function loadHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    // UI vars
     const chat = document.getElementById("chat");
     const input = document.getElementById("input");
     const send = document.getElementById("send");
@@ -323,7 +374,7 @@
       document.documentElement.style.setProperty("--input-bg", bg);
       document.documentElement.style.setProperty("--input-border", border);
 
-      const textColor = bg === "#fff" || bg === "#d2f3ff" ? "#222" : "white";
+      const textColor = bg === "#fff" || bg === "#d2f3ff" || bg === "#ffe0e0" || bg === "#ffffe0" ? "#222" : "white";
       input.style.color = textColor;
       input.style.background = bg;
       input.style.borderColor = border;
@@ -339,7 +390,10 @@
       return "✓✓";
     }
 
-    function addBubble(text, role = "gabo", sent = true, received = true, read = false) {
+    // Historial en memoria
+    let history = loadHistory();
+
+    function addBubble(text, role = "gabo", sent = true, received = true, read = false, noSave) {
       const bubble = document.createElement("div");
       bubble.className = `bubble ${role}`;
       bubble.innerHTML = marked.parse(text.replace(/DeepSeek/gi, "Gabo"));
@@ -364,6 +418,12 @@
         duration: 420,
         easing: "ease"
       });
+
+      // Guardar en historial si no es carga inicial
+      if (!noSave) {
+        history.push({ text, role, time: Date.now(), sent, received, read });
+        saveHistory(history);
+      }
     }
 
     function sendMessage() {
@@ -428,12 +488,18 @@
         duration: 650,
         easing: "ease"
       });
+      // Cargar historial
+      history.forEach(msg => {
+        addBubble(msg.text, msg.role, msg.sent, msg.received, msg.read, true);
+      });
     };
 
-    // Mensaje de bienvenida animado
-    setTimeout(() => {
-      addBubble("👋 ¡Hola! Soy <b>Gabo</b>, tu asistente AI.<br>¿En qué puedo ayudarte hoy?");
-    }, 500);
+    // Mensaje de bienvenida animado si no hay historial
+    if (history.length === 0) {
+      setTimeout(() => {
+        addBubble("👋 ¡Hola! Soy <b>Gabo</b>, tu asistente AI.<br>¿En qué puedo ayudarte hoy?");
+      }, 500);
+    }
 
     // Para mejorar experiencia en móviles: scroll al input al abrir teclado
     input.addEventListener("focus", () => {
