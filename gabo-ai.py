@@ -4,8 +4,18 @@ from tkinter import messagebox
 import requests
 import threading
 import markdown2
+import time
+import subprocess
 
-ctk.set_appearance_mode("dark")
+# 🎨 Colores ANSI
+CYAN = "\033[96m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+RED = "\033[91m"
+MAGENTA = "\033[95m"
+RESET = "\033[0m"
+
+ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 # API DeepSeek (ajusta el key si lo cambias)
@@ -13,11 +23,36 @@ API_URL = "https://api.together.xyz/v1/chat/completions"
 API_KEY = "97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210"
 MODEL = "deepseek-ai/DeepSeek-V3"
 
+def getversion():
+    newversion = time.strftime("%y.%m-%H.%M")
+    newversion = f"1-{newversion}-danenone"
+    return newversion
+
 class GaboAIApp(ctk.CTk):
     def __init__(self):
+        newversion = getversion()
+        """
+        errory = f"{RED}═══ screen mode ════════════════════════════════════════════\n"
+        errory = f"{errory} Disculpa pero no colocastes ningún valor\n {CYAN}Ajustando a 600x600 (Perfomance DPI)...\n{errory}"
+        
+        banner = f"{GREEN}═══ screen mode ════════════════════════════════════════════\n"
+        banner = f"{banner} Hola👋, escoje un dispositivo de emulación:\n {CYAN}1 Android Mode (600x700)\n {RED}2 Tablet Mode (1200x700)\n{banner}"
+        print(banner)
+        frameselector = input(f"{GREEN}flatr_gaboai-v{newversion}{MAGENTA}@{CYAN}:").strip()
+        if frameselector == "1":
+            frameselector = "600x700"
+        elif frameselector == "2":
+            frameselector = "1200x700"
+        elif frameselector == "3":
+            frameselector = input(f"{YELLOW}Necesitamos sus medidas, empecemos por el {GREEN}Ancho x Alto")
+        else:
+            subprocess.run(['clear'])
+            print(errory)
+            frameselector = "600x600"
+        """
         super().__init__()
-        self.title("Gabo AI - Chat WhatsApp Style")
-        self.geometry("600x700")
+        self.title(f"Gabo AI Chat | WhatsApp Theme | {newversion} | Android Emulation")
+        self.geometry("600x700") #frameselector
         self.resizable(False, False)
 
         # Chat frame
@@ -36,10 +71,6 @@ class GaboAIApp(ctk.CTk):
         self.bubbles_window = self.canvas.create_window((0, 0), window=self.bubbles_frame, anchor="nw")
         self.bubbles_frame.bind("<Configure>", self._on_frame_configure)
         self.canvas.bind("<Configure>", self._on_canvas_configure)
-
-        # Header
-        self.header = ctk.CTkLabel(self, text="Chat de IA", fg_color="#075e54", text_color="#fff", font=("Roboto", 18), height=48)
-        self.header.place(relx=0, rely=0, relwidth=1, y=0)
 
         # Entry + button
         self.controls_frame = ctk.CTkFrame(self, fg_color="#fff")
