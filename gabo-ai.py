@@ -34,7 +34,7 @@ class GaboAIApp(ctk.CTk):
         """
         errory = f"{RED}═══ screen mode ════════════════════════════════════════════\n"
         errory = f"{errory} Disculpa pero no colocastes ningún valor\n {CYAN}Ajustando a 600x600 (Perfomance DPI)...\n{errory}"
-        
+
         banner = f"{GREEN}═══ screen mode ════════════════════════════════════════════\n"
         banner = f"{banner} Hola👋, escoje un dispositivo de emulación:\n {CYAN}1 Android Mode (600x700)\n {RED}2 Tablet Mode (1200x700)\n{banner}"
         print(banner)
@@ -159,7 +159,7 @@ class GaboAIApp(ctk.CTk):
 
     def _strip_html(self, html_content):
         """Converts HTML to plain text for the bubble (removes tags, keeps code blocks)."""
-        # markdown2 returns html, 
+        # markdown2 returns html,
         # for simplicity, we remove tags except code blocks.
         import re
         # Replace <code>...</code> with ```...```
