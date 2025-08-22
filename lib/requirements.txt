@@ -1,3 +1,4 @@
 customtkinter
 requests
-markdown2
+markdown
+pillow
