@@ -3,470 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gabo AI - Asistente con Estilo GitHub</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Gabo AI - Asistente Estilo GitHub</title>
     <style>
         :root {
-            --color-bg-primary: #0d1117;
-            --color-bg-secondary: #161b22;
-            --color-border-primary: #30363d;
-            --color-border-secondary: #21262d;
-            --color-text-primary: #f0f6fc;
-            --color-text-secondary: #c9d1d9;
-            --color-text-tertiary: #8b949e;
-            --color-accent: #58a6ff;
-            --color-success: #3fb950;
-            --color-btn-bg: #21262d;
-            --color-btn-hover: #30363d;
-            --color-btn-active: #3fb950;
-            --color-shadow: rgba(0, 0, 0, 0.2);
-        }
-
-        .light-theme {
-            --color-bg-primary: #ffffff;
-            --color-bg-secondary: #f6f8fa;
-            --color-border-primary: #d0d7de;
-            --color-border-secondary: #eaeef2;
-            --color-text-primary: #24292f;
-            --color-text-secondary: #57606a;
-            --color-text-tertiary: #6e7781;
-            --color-accent: #0969da;
-            --color-success: #1a7f37;
-            --color-btn-bg: #f6f8fa;
-            --color-btn-hover: #eaeef2;
-            --color-btn-active: #1a7f37;
-            --color-shadow: rgba(0, 0, 0, 0.05);
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --border: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #c9d1d9;
+            --accent: #58a6ff;
+            --success: #3fb950;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
         body {
-            background-color: var(--color-bg-primary);
-            color: var(--color-text-primary);
-            line-height: 1.5;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .header {
-            background-color: var(--color-bg-secondary);
-            border-bottom: 1px solid var(--color-border-primary);
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(45deg, #58a6ff, #1f6feb);
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .controls {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .btn {
-            background-color: var(--color-btn-bg);
-            color: var(--color-text-primary);
-            border: 1px solid var(--color-border-primary);
-            border-radius: 3px;
-            padding: 6px 12px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background-color: var(--color-btn-hover);
-        }
-
-        .btn-primary {
-            background-color: var(--color-success);
-            color: white;
-            border-color: rgba(240, 246, 252, 0.1);
-        }
-
-        .btn-primary:hover {
-            background-color: #2ea043;
-        }
-
-        .search-container {
-            position: relative;
-        }
-
-        .search-input {
-            background-color: var(--color-bg-secondary);
-            border: 1px solid var(--color-border-primary);
-            border-radius: 3px;
-            padding: 6px 12px;
-            padding-left: 32px;
-            color: var(--color-text-primary);
-            width: 240px;
-            font-size: 14px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--color-text-tertiary);
+            overflow: hidden;
         }
 
         .container {
             display: flex;
             flex: 1;
+            overflow: hidden;
         }
 
         .sidebar {
-            width: 260px;
-            background-color: var(--color-bg-secondary);
-            border-right: 1px solid var(--color-border-primary);
-            padding: 16px;
+            width: 200px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 15px;
         }
 
-        .sidebar-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
-        .sidebar-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .model-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px;
-            border-radius: 3px;
+        .btn {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            text-align: center;
+            transition: all 0.2s;
         }
 
-        .model-item:hover {
-            background-color: var(--color-btn-hover);
-        }
-
-        .model-item.active {
-            background-color: var(--color-btn-hover);
-            border-left: 2px solid var(--color-success);
-        }
-
-        .model-icon {
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .model-name {
-            font-size: 14px;
-        }
-
-        .model-desc {
-            font-size: 12px;
-            color: var(--color-text-tertiary);
+        .btn:hover {
+            background-color: var(--bg-secondary);
         }
 
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
-        }
-
-        .chat-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--color-border-primary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background-color: var(--color-bg-primary);
-        }
-
-        .current-model {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--color-success);
+            overflow: hidden;
         }
 
         .chat-container {
             flex: 1;
-            padding: 16px;
             overflow-y: auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 15px;
         }
 
-        .message {
-            max-width: 80%;
+        /* ESTILOS PARA MANTENER EL INPUT ABAJO */
+        .input-container {
+            padding: 15px 20px;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            margin-top: auto; /* Esto es clave para mantenerlo abajo */
+        }
+
+        .input-box {
             display: flex;
-            flex-direction: column;
+            gap: 10px;
         }
 
-        .message-user {
-            align-self: flex-end;
-        }
-
-        .message-ai {
-            align-self: flex-start;
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
+        .message-input {
+            flex: 1;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
             font-size: 14px;
         }
 
-        .message-sender {
-            font-weight: 600;
+        .send-button {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 20px;
+            cursor: pointer;
         }
 
-        .message-time {
-            color: var(--color-text-tertiary);
-            font-size: 12px;
+        .message {
+            max-width: 500px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
-        .message-bubble {
-            padding: 12px 16px;
-            border-radius: 3px;
-            border: 1px solid var(--color-border-primary);
-            background-color: var(--color-bg-secondary);
-            box-shadow: 0 1px 0 var(--color-shadow);
+        .message.user {
+            background-color: var(--success);
+            color: white;
+            align-self: flex-end;
+            margin-left: 100px;
         }
 
-        .message-user .message-bubble {
-            background-color: #0c2d6b;
-            border-color: #1f4b95;
+        .message.ai {
+            background-color: var(--bg-secondary);
+            align-self: flex-start;
+            margin-right: 100px;
         }
 
         .message-content {
             line-height: 1.5;
         }
 
-        .message-content h1,
-        .message-content h2,
-        .message-content h3 {
-            margin: 16px 0 8px 0;
-            font-weight: 600;
-        }
-
-        .message-content p {
-            margin: 8px 0;
-        }
-
-        .message-content ul,
-        .message-content ol {
-            margin: 8px 0;
-            padding-left: 24px;
-        }
-
-        .message-content li {
-            margin: 4px 0;
-        }
-
-        .message-content code {
-            background-color: var(--color-btn-bg);
-            padding: 2px 6px;
-            border-radius: 3px;
-            border: 1px solid var(--color-border-primary);
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 13px;
-        }
-
-        .message-content pre {
-            background-color: var(--color-btn-bg);
-            border-radius: 3px;
-            border: 1px solid var(--color-border-primary);
-            padding: 12px;
-            overflow-x: auto;
-            margin: 12px 0;
-        }
-
-        .message-content pre code {
-            background: none;
-            border: none;
-            padding: 0;
-        }
-
-        .message-content blockquote {
-            border-left: 3px solid var(--color-border-primary);
-            padding-left: 12px;
-            margin: 12px 0;
-            color: var(--color-text-tertiary);
-        }
-
-        .message-content a {
-            color: var(--color-accent);
-            text-decoration: none;
-        }
-
-        .message-content a:hover {
-            text-decoration: underline;
-        }
-
-        .input-container {
-            padding: 16px;
-            border-top: 1px solid var(--color-border-primary);
-            background-color: var(--color-bg-primary);
-        }
-
-        .input-box {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-
-        .message-input {
-            flex: 1;
-            background-color: var(--color-bg-secondary);
-            border: 1px solid var(--color-border-primary);
-            border-radius: 3px;
-            padding: 12px;
-            color: var(--color-text-primary);
-            resize: none;
-            min-height: 60px;
-            max-height: 200px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
-        }
-
-        .send-button {
-            background-color: var(--color-success);
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 10px 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
-
-        .send-button:hover {
-            background-color: #2ea043;
+        .message-info {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 8px;
         }
 
         .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 12px 16px;
-            border-radius: 3px;
-            border: 1px solid var(--color-border-primary);
-            background-color: var(--color-bg-secondary);
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
             align-self: flex-start;
-            max-width: fit-content;
-        }
-
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background-color: var(--color-text-tertiary);
-            border-radius: 50%;
-            animation: typingAnimation 1.4s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: 0s; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typingAnimation {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-4px); }
-        }
-
-        .code-block {
-            position: relative;
-            margin: 12px 0;
-        }
-
-        .save-code-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background-color: var(--color-btn-bg);
-            color: var(--color-text-primary);
-            border: 1px solid var(--color-border-primary);
-            border-radius: 3px;
-            padding: 4px 8px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
-        }
-
-        .save-code-btn:hover {
-            background-color: var(--color-btn-hover);
+            margin-right: 100px;
         }
 
         @media (max-width: 768px) {
@@ -477,129 +163,39 @@
             .sidebar {
                 width: 100%;
                 border-right: none;
-                border-bottom: 1px solid var(--color-border-primary);
-                padding: 12px;
+                border-bottom: 1px solid var(--border);
             }
 
-            .search-input {
-                width: 180px;
+            .message.user, .message.ai {
+                margin-left: 20px;
+                margin-right: 20px;
             }
-
-            .message {
-                max-width: 90%;
-            }
-        }
-
-        .emoji {
-            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-            font-size: 1.2em;
-            vertical-align: middle;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            <div class="logo-icon">G</div>
-            <span>Gabo AI</span>
-        </div>
-        <div class="controls">
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" class="search-input" placeholder="Buscar en conversación...">
-            </div>
-            <button class="btn" id="themeToggle">
-                <i class="fas fa-moon"></i>
-                <span>Tema</span>
-            </button>
-            <button class="btn">
-                <i class="fas fa-history"></i>
-                <span>Historial</span>
-            </button>
-            <button class="btn btn-primary">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo chat</span>
-            </button>
-        </div>
-    </div>
-
     <div class="container">
         <div class="sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Modelos de IA</div>
-                <div class="model-item active" data-model="gemini-2.0-flash">
-                    <div class="model-icon"><i class="fas fa-bolt" style="color: #58a6ff;"></i></div>
-                    <div>
-                        <div class="model-name">Gabo AI Flash</div>
-                        <div class="model-desc">Modelo rápido y eficiente</div>
-                    </div>
-                </div>
-                <div class="model-item" data-model="gemini-1.5-pro-latest">
-                    <div class="model-icon"><i class="fas fa-crown" style="color: #d29922;"></i></div>
-                    <div>
-                        <div class="model-name">Gabo AI Pro</div>
-                        <div class="model-desc">Modelo avanzado</div>
-                    </div>
-                </div>
-                <div class="model-item" data-model="gemini-1.0-pro">
-                    <div class="model-icon"><i class="fas fa-star" style="color: #a371f7;"></i></div>
-                    <div>
-                        <div class="model-name">Gabo AI Classic</div>
-                        <div class="model-desc">Versión clásica</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-title">Configuración</div>
-                <button class="btn" style="justify-content: start;">
-                    <i class="fas fa-sliders-h"></i>
-                    <span>Preferencias</span>
-                </button>
-                <button class="btn" style="justify-content: start;">
-                    <i class="fas fa-download"></i>
-                    <span>Exportar datos</span>
-                </button>
-            </div>
+            <div class="logo">Gabo AI</div>
+            <button class="btn" onclick="newConversation()">Nueva Conversación</button>
+            <button class="btn" onclick="saveConversation()">Guardar Chat</button>
+            <button class="btn" onclick="toggleTheme()">Cambiar Tema</button>
         </div>
 
         <div class="main-content">
-            <div class="chat-header">
-                <div class="current-model">
-                    <div class="status-dot"></div>
-                    <span>Gabo AI Flash</span>
-                </div>
-            </div>
-
             <div class="chat-container" id="chatContainer">
-                <div class="message message-ai">
-                    <div class="message-header">
-                        <span class="message-sender">Gabo AI</span>
-                        <span class="message-time" id="currentTime"></span>
+                <div class="message ai">
+                    <div class="message-content">
+                        ¡Hola! Soy Gabo AI, tu asistente de inteligencia artificial. ¿En qué puedo ayudarte hoy?
                     </div>
-                    <div class="message-bubble">
-                        <div class="message-content">
-                            <h2>¡Hola! 👋 Soy Gabo AI</h2>
-                            <p>Tu asistente de inteligencia artificial con estilo GitHub. Estoy aquí para ayudarte con:</p>
-                            <ul>
-                                <li>Responder preguntas ❓</li>
-                                <li>Generar código 💻</li>
-                                <li>Resolver problemas 🛠️</li>
-                                <li>Y mucho más... 🚀</li>
-                            </ul>
-                            <p>¡Escribe tu mensaje y comencemos! 😊</p>
-                        </div>
-                    </div>
+                    <div class="message-info">Gabo AI • <span id="currentTime"></span></div>
                 </div>
             </div>
 
             <div class="input-container">
                 <div class="input-box">
-                    <textarea class="message-input" id="messageInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
-                    <button class="send-button" id="sendButton">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>Enviar</span>
-                    </button>
+                    <input type="text" class="message-input" id="messageInput" placeholder="Escribe tu mensaje...">
+                    <button class="send-button" onclick="sendMessage()">Enviar</button>
                 </div>
             </div>
         </div>
@@ -608,259 +204,156 @@
     <script>
         // API Configuration
         const API_KEY = "AIzaSyDD8X1GvPm6j3axGaWz-pmjKSQXdP8eci4";
-        let currentModel = "gemini-2.0-flash";
-        let chatHistory = [];
-
-        // DOM Elements
-        const chatContainer = document.getElementById('chatContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        const themeToggle = document.getElementById('themeToggle');
-        const currentTimeElement = document.getElementById('currentTime');
-        const searchInput = document.querySelector('.search-input');
-        const modelItems = document.querySelectorAll('.model-item');
+        const MODEL = "gemini-2.0-flash";
+        let conversationHistory = [];
 
         // Initialize current time
         function updateCurrentTime() {
             const now = new Date();
-            currentTimeElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString([], {
+                hour: '2-digit', minute: '2-digit'
+            });
         }
         updateCurrentTime();
         setInterval(updateCurrentTime, 60000);
 
-        // Configure marked for Markdown parsing
-        marked.setOptions({
-            highlight: function(code, lang) {
-                if (lang && hljs.getLanguage(lang)) {
-                    return hljs.highlight(code, { language: lang }).value;
-                }
-                return hljs.highlightAuto(code).value;
-            },
-            breaks: true
-        });
+        function addMessage(text, isUser = false) {
+            const chatContainer = document.getElementById('chatContainer');
 
-        // Toggle theme
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            const icon = themeToggle.querySelector('i');
-            if (document.body.classList.contains('light-theme')) {
-                icon.className = 'fas fa-sun';
-                themeToggle.querySelector('span').textContent = 'Tema claro';
-            } else {
-                icon.className = 'fas fa-moon';
-                themeToggle.querySelector('span').textContent = 'Tema oscuro';
-            }
-        });
-
-        // Model selection
-        modelItems.forEach(item => {
-            item.addEventListener('click', () => {
-                modelItems.forEach(m => m.classList.remove('active'));
-                item.classList.add('active');
-                currentModel = item.getAttribute('data-model');
-
-                // Update chat header
-                const modelName = item.querySelector('.model-name').textContent;
-                document.querySelector('.current-model span').textContent = modelName;
-            });
-        });
-
-        // Add message to chat
-        function addMessageToChat(text, isUser = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'message-user' : 'message-ai'}`;
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
 
             const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            // Format message with markdown if it's from AI
-            let formattedText = text;
-            if (!isUser) {
-                formattedText = formattedText.replace(/Gemini/g, 'Gabo AI').replace(/gemini/g, 'Gabo AI');
-                formattedText = marked.parse(formattedText);
-            } else {
-                // For user messages, just escape HTML and add line breaks
-                formattedText = formattedText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                formattedText = formattedText.replace(/\n/g, '<br>');
-            }
+            const timeString = now.toLocaleTimeString([], {
+                hour: '2-digit', minute: '2-digit'
+            });
 
             messageDiv.innerHTML = `
-                <div class="message-header">
-                    <span class="message-sender">${isUser ? 'Tú' : 'Gabo AI'}</span>
-                    <span class="message-time">${timeString}</span>
-                </div>
-                <div class="message-bubble">
-                    <div class="message-content">${formattedText}</div>
-                </div>
+                <div class="message-content">${text}</div>
+                <div class="message-info">${isUser ? 'Tú' : 'Gabo AI'} • ${timeString}</div>
             `;
 
             chatContainer.appendChild(messageDiv);
-            scrollToBottom();
 
-            // Add to history
-            chatHistory.push({ text, isUser, time: timeString });
-
-            // Highlight code blocks
-            document.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-
-                // Add save button to code blocks
-                const codeBlock = block.closest('pre');
-                if (codeBlock && !codeBlock.querySelector('.save-code-btn')) {
-                    const saveButton = document.createElement('button');
-                    saveButton.className = 'save-code-btn';
-                    saveButton.innerHTML = '<i class="fas fa-download"></i> Guardar';
-                    saveButton.onclick = function() {
-                        saveCode(block.textContent);
-                    };
-
-                    const container = document.createElement('div');
-                    container.className = 'code-block';
-                    codeBlock.parentNode.insertBefore(container, codeBlock);
-                    container.appendChild(codeBlock);
-                    container.appendChild(saveButton);
-                }
+            // Guardar en historial
+            conversationHistory.push({
+                text: text,
+                isUser: isUser,
+                time: timeString
             });
-        }
 
-        // Show typing indicator
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator';
-            typingDiv.id = 'typingIndicator';
-            typingDiv.innerHTML = `
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <span>Gabo AI está escribiendo...</span>
-            `;
-            chatContainer.appendChild(typingDiv);
+            // Auto-scroll
             scrollToBottom();
         }
 
-        // Hide typing indicator
-        function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-
-        // Scroll to bottom
         function scrollToBottom() {
+            const chatContainer = document.getElementById('chatContainer');
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // Save code to file
-        function saveCode(codeContent) {
-            const blob = new Blob([codeContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'codigo.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Send message to Gemini API
-        async function sendMessageToGemini(message) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${API_KEY}`;
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: message
-                            }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.7
-                        }
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.candidates && data.candidates[0]) {
-                    return data.candidates[0].content.parts[0].text;
-                } else {
-                    throw new Error('No response generated');
-                }
-            } catch (error) {
-                console.error('Error calling Gemini API:', error);
-                return `Lo siento, hubo un error al procesar tu solicitud: ${error.message}`;
-            }
-        }
-
-        // Send message
-        async function sendMessage() {
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
             const message = messageInput.value.trim();
+
             if (!message) return;
 
-            // Add user message to chat
-            addMessageToChat(message, true);
+            addMessage(message, true);
             messageInput.value = '';
-            messageInput.style.height = 'auto';
 
             // Show typing indicator
-            showTypingIndicator();
+            const chatContainer = document.getElementById('chatContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.textContent = 'Gabo AI está escribiendo...';
+            chatContainer.appendChild(typingDiv);
+            scrollToBottom();
 
+            // Get AI response
+            getAIResponse(message);
+        }
+
+        async function getAIResponse(message) {
             try {
-                // Send to Gemini API and get response
-                const response = await sendMessageToGemini(message);
+                const response = await sendToGemini(message);
 
-                // Remove typing indicator and add AI response
-                hideTypingIndicator();
-                addMessageToChat(response, false);
+                // Remove typing indicator
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+
+                addMessage(response, false);
             } catch (error) {
-                hideTypingIndicator();
-                addMessageToChat('Lo siento, hubo un error al procesar tu mensaje.', false);
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+
+                addMessage(`Error: ${error.message}`, false);
             }
         }
 
-        // Event listeners
-        sendButton.addEventListener('click', sendMessage);
+        async function sendToGemini(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Auto-resize textarea
-            setTimeout(() => {
-                messageInput.style.height = 'auto';
-                messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
-            }, 0);
-        });
+            const result = await response.json();
+            if (result.candidates && result.candidates[0]) {
+                let text = result.candidates[0].content.parts[0].text;
+                return text.replace(/Gemini/gi, 'Gabo AI');
+            } else {
+                throw new Error('No response generated');
+            }
+        }
 
-        // Search functionality
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase();
+        function newConversation() {
+            if (conversationHistory.length > 0) {
+                if (confirm('¿Estás seguro de que quieres comenzar una nueva conversación? Se borrará el historial actual.')) {
+                    const chatContainer = document.getElementById('chatContainer');
+                    chatContainer.innerHTML = '';
+                    conversationHistory = [];
 
-            document.querySelectorAll('.message').forEach(message => {
-                const messageText = message.querySelector('.message-content').textContent.toLowerCase();
-                if (messageText.includes(searchTerm)) {
-                    message.style.display = 'flex';
-                } else {
-                    message.style.display = 'none';
+                    addMessage('¡Hola! Soy Gabo AI, tu asistente de inteligencia artificial. ¿En qué puedo ayudarte hoy?', false);
                 }
-            });
+            }
+        }
+
+        function saveConversation() {
+            alert('Función de guardado implementada aquí');
+        }
+
+        function toggleTheme() {
+            alert('Función de cambio de tema implementada aquí');
+        }
+
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
         });
 
-        // Initialize
-        scrollToBottom();
+        // Initial scroll to bottom
+        window.addEventListener('load', scrollToBottom);
     </script>
 </body>
 </html>
