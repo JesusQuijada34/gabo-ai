@@ -1,198 +1,411 @@
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox
+import pygame
+import sys
+import math
+import random
+from typing import List, Dict, Tuple, Optional, Callable
 import requests
-import threading
-import markdown2
-import time
-import subprocess
+import json
+from datetime import datetime
 
-# 🎨 Colores ANSI
-CYAN = "\033[96m"
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-RED = "\033[91m"
-MAGENTA = "\033[95m"
-RESET = "\033[0m"
+# Inicializar Pygame
+pygame.init()
 
-ctk.set_appearance_mode("light")
-ctk.set_default_color_theme("blue")
+# Configuración de la pantalla
+WIDTH, HEIGHT = 1000, 700
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Gabo AI - Interfaz con Efectos HTML")
 
-# API DeepSeek (ajusta el key si lo cambias)
-API_URL = "https://api.together.xyz/v1/chat/completions"
-API_KEY = "97301d064786753021066a79298e18af22d5d545140f99994373bf3ac82c1210"
-MODEL = "deepseek-ai/DeepSeek-V3"
+# Colores
+BACKGROUND = (240, 240, 245)
+SIDEBAR_BG = (30, 30, 40)
+PRIMARY = (76, 175, 80)
+PRIMARY_LIGHT = (105, 200, 110)
+SECONDARY = (50, 130, 184)
+TEXT = (30, 30, 30)
+TEXT_LIGHT = (200, 200, 200)
+WHITE = (255, 255, 255)
+CARD_BG = (250, 250, 255)
+SHADOW = (200, 200, 200, 100)
+USER_MSG = (76, 175, 80)
+AI_MSG = (240, 240, 245)
 
-def getversion():
-    newversion = time.strftime("%y.%m-%H.%M")
-    newversion = f"1-{newversion}-danenone"
-    return newversion
+# Configuración de la API
+API_KEY = "AIzaSyDD8X1GvPm6j3axGaWz-pmjKSQXdP8eci4"
+MODELS = {
+    "flash": {"name": "Gabo AI Flash", "model": "gemini-2.0-flash", "color": (76, 175, 80)},
+    "pro": {"name": "Gabo AI Pro", "model": "gemini-1.5-pro-latest", "color": (50, 130, 184)},
+    "classic": {"name": "Gabo AI Classic", "model": "gemini-1.0-pro", "color": (156, 39, 176)}
+}
+current_model = MODELS["flash"]
 
-class GaboAIApp(ctk.CTk):
+# Fuentes
+font_small = pygame.font.SysFont("Arial", 14)
+font_medium = pygame.font.SysFont("Arial", 16)
+font_large = pygame.font.SysFont("Arial", 24)
+font_title = pygame.font.SysFont("Arial", 32, bold=True)
+
+# Estados de la aplicación
+class AppState:
     def __init__(self):
-        newversion = getversion()
-        """
-        errory = f"{RED}═══ screen mode ════════════════════════════════════════════\n"
-        errory = f"{errory} Disculpa pero no colocastes ningún valor\n {CYAN}Ajustando a 600x600 (Perfomance DPI)...\n{errory}"
+        self.messages = []
+        self.input_text = ""
+        self.typing_indicator = False
+        self.typing_progress = 0
+        self.animations = []
+        self.particles = []
+        self.sidebar_visible = True
+        self.selected_tab = "chat"
+        self.scroll_offset = 0
+        self.max_scroll = 0
 
-        banner = f"{GREEN}═══ screen mode ════════════════════════════════════════════\n"
-        banner = f"{banner} Hola👋, escoje un dispositivo de emulación:\n {CYAN}1 Android Mode (600x700)\n {RED}2 Tablet Mode (1200x700)\n{banner}"
-        print(banner)
-        frameselector = input(f"{GREEN}flatr_gaboai-v{newversion}{MAGENTA}@{CYAN}:").strip()
-        if frameselector == "1":
-            frameselector = "600x700"
-        elif frameselector == "2":
-            frameselector = "1200x700"
-        elif frameselector == "3":
-            frameselector = input(f"{YELLOW}Necesitamos sus medidas, empecemos por el {GREEN}Ancho x Alto")
-        else:
-            subprocess.run(['clear'])
-            print(errory)
-            frameselector = "600x600"
-        """
-        super().__init__()
-        self.title(f"Gabo AI Chat | WhatsApp Theme | {newversion} | Android Emulation")
-        self.geometry("600x700") #frameselector
-        self.resizable(False, False)
+app_state = AppState()
 
-        # Chat frame
-        self.chat_frame = ctk.CTkFrame(self, fg_color="#e5ddd5")
-        self.chat_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+# Clases para elementos de UI
+class Button:
+    def __init__(self, x, y, width, height, text, color, hover_color, action=None, icon=None):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.color = color
+        self.hover_color = hover_color
+        self.action = action
+        self.icon = icon
+        self.hovered = False
+        self.alpha = 255
 
-        # Canvas + scrollbar
-        self.canvas = tk.Canvas(self.chat_frame, bg="#e5ddd5", highlightthickness=0)
-        self.scrollbar = ctk.CTkScrollbar(self.chat_frame, command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    def draw(self, surface):
+        # Dibujar sombra
+        shadow_rect = self.rect.copy()
+        shadow_rect.x += 3
+        shadow_rect.y += 3
+        pygame.draw.rect(surface, (*SHADOW[:3], 100), shadow_rect, border_radius=8)
 
-        # Internal frame for bubbles
-        self.bubbles_frame = ctk.CTkFrame(self.canvas, fg_color="#e5ddd5")
-        self.bubbles_window = self.canvas.create_window((0, 0), window=self.bubbles_frame, anchor="nw")
-        self.bubbles_frame.bind("<Configure>", self._on_frame_configure)
-        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        # Dibujar botón
+        color = self.hover_color if self.hovered else self.color
+        pygame.draw.rect(surface, color, self.rect, border_radius=8)
 
-        # Entry + button
-        self.controls_frame = ctk.CTkFrame(self, fg_color="#fff")
-        self.controls_frame.pack(side=tk.BOTTOM, fill=tk.X)
-        self.entry = ctk.CTkEntry(self.controls_frame, placeholder_text="Escribe un mensaje...", width=450)
-        self.entry.pack(side=tk.LEFT, padx=(10, 5), pady=10, expand=True, fill=tk.X)
-        self.entry.bind("<Return>", lambda e: self._send_message())
+        # Efecto de brillo en hover
+        if self.hovered:
+            highlight = pygame.Surface((self.rect.width, 4), pygame.SRCALPHA)
+            highlight.fill((255, 255, 255, 100))
+            surface.blit(highlight, (self.rect.x, self.rect.y))
 
-        self.send_btn = ctk.CTkButton(self.controls_frame, text="Enviar", command=self._send_message, fg_color="#075e54", text_color="#fff")
-        self.send_btn.pack(side=tk.LEFT, padx=(0, 10), pady=10)
+        # Dibujar texto
+        text_surf = font_medium.render(self.text, True, WHITE)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        surface.blit(text_surf, text_rect)
 
-        # Historial
-        self.history = []
+        # Dibujar icono si existe
+        if self.icon:
+            icon_rect = pygame.Rect(self.rect.x + 10, self.rect.y + (self.rect.height - 20) // 2, 20, 20)
+            # Aquí podrías dibujar un icono real
 
-        # Mensaje de bienvenida
-        self.after(500, lambda: self._add_bubble("👋 ¡Hola! Soy Gabo, tu asistente AI.<br>¿En qué puedo ayudarte hoy?", "gabo", markdown=True))
+    def update(self, mouse_pos):
+        self.hovered = self.rect.collidepoint(mouse_pos)
+        return self.hovered
 
-    def _on_frame_configure(self, event=None):
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        self.canvas.yview_moveto(1)
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.hovered:
+            if self.action:
+                self.action()
+            return True
+        return False
 
-    def _on_canvas_configure(self, event=None):
-        self.canvas.itemconfig(self.bubbles_window, width=event.width)
+class InputBox:
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = ""
+        self.active = False
+        self.cursor_visible = True
+        self.cursor_timer = 0
 
-    def _send_message(self):
-        user_text = self.entry.get().strip()
-        if user_text:
-            self._add_bubble(user_text, "user")
-            self.entry.delete(0, tk.END)
-            self.send_btn.configure(state="disabled", text="Pensando...")
-            threading.Thread(target=self._get_gabo_response, args=(user_text,), daemon=True).start()
+    def draw(self, surface):
+        # Dibujar fondo
+        pygame.draw.rect(surface, WHITE, self.rect, border_radius=8)
+        pygame.draw.rect(surface, (200, 200, 200), self.rect, 2, border_radius=8)
 
-    def _add_bubble(self, text, sender, markdown=False):
-        # WhatsApp style colors
-        bubble_color = "#dcf8c6" if sender == "user" else "#fff"
-        text_color = "#222"
-        align = tk.E if sender == "user" else tk.W
-        border_radius = 22
+        # Dibujar texto
+        text_surf = font_medium.render(self.text, True, TEXT)
+        surface.blit(text_surf, (self.rect.x + 10, self.rect.y + (self.rect.height - text_surf.get_height()) // 2))
 
-        bubble = ctk.CTkFrame(self.bubbles_frame, fg_color=bubble_color, corner_radius=border_radius)
-        bubble.pack(fill=tk.NONE, anchor=align, pady=3, padx=6)
+        # Dibujar cursor si está activo
+        if self.active and self.cursor_visible:
+            cursor_x = self.rect.x + 10 + font_medium.size(self.text)[0]
+            pygame.draw.line(surface, TEXT, (cursor_x, self.rect.y + 10),
+                            (cursor_x, self.rect.y + self.rect.height - 10), 2)
 
-        # Procesa markdown y reemplaza DeepSeek por Gabo
-        show_text = text.replace("DeepSeek", "Gabo")
-        if markdown:
-            html = markdown2.markdown(show_text)
-            clean_text = self._strip_html(html)
-        else:
-            clean_text = show_text
+    def update(self):
+        self.cursor_timer += 1
+        if self.cursor_timer > 30:
+            self.cursor_visible = not self.cursor_visible
+            self.cursor_timer = 0
 
-        # Detecta bloques de código
-        if "```" in clean_text:
-            parts = clean_text.split("```")
-            if parts[0].strip():
-                label = ctk.CTkLabel(bubble, text=parts[0].strip(), font=("Roboto", 13), text_color=text_color, wraplength=420, justify=tk.LEFT)
-                label.pack(side=tk.TOP, padx=10, pady=(10,2), anchor="w")
-            if len(parts) > 1 and parts[1].strip():
-                codeblock = ctk.CTkTextbox(bubble, height=90, font=("Consolas", 11), fg_color="#222", text_color="#e4e4e4", wrap="none")
-                codeblock.insert("1.0", parts[1].strip())
-                codeblock.configure(state="disabled")
-                codeblock.pack(side=tk.TOP, fill=tk.X, padx=10, pady=(2,2))
-                copy_btn = ctk.CTkButton(bubble, text="Copiar código", width=90, command=lambda t=parts[1].strip(): self._copy_to_clipboard(t))
-                copy_btn.pack(side=tk.TOP, padx=10, pady=(0,7), anchor="e")
-            if len(parts) > 2 and parts[2].strip():
-                label2 = ctk.CTkLabel(bubble, text=parts[2].strip(), font=("Roboto", 13), text_color=text_color, wraplength=420, justify=tk.LEFT)
-                label2.pack(side=tk.TOP, padx=10, pady=(2,10), anchor="w")
-        else:
-            label = ctk.CTkLabel(bubble, text=clean_text, font=("Roboto", 13), text_color=text_color, wraplength=420, justify=tk.LEFT)
-            label.pack(side=tk.LEFT, padx=14, pady=10)
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.active = self.rect.collidepoint(event.pos)
 
-        # Footer WhatsApp style
-        footer = ctk.CTkLabel(bubble, text=self._get_time(), font=("Roboto", 9), text_color="#555")
-        footer.pack(side=tk.RIGHT, padx=10, pady=(0,4), anchor="se")
+        if event.type == pygame.KEYDOWN and self.active:
+            if event.key == pygame.K_RETURN:
+                return self.text
+            elif event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            else:
+                self.text += event.unicode
 
-        self._on_frame_configure()
+        return None
 
-    def _copy_to_clipboard(self, text):
-        self.clipboard_clear()
-        self.clipboard_append(text)
-        messagebox.showinfo("Gabo AI", "¡Código copiado al portapapeles!")
+class Message:
+    def __init__(self, text, is_user=False):
+        self.text = text
+        self.is_user = is_user
+        self.height = 0
+        self.alpha = 0
+        self.animation_progress = 0
+        self.width = 400 if is_user else 500
 
-    def _get_time(self):
-        import datetime
-        now = datetime.datetime.now()
-        return now.strftime("%H:%M")
+    def draw(self, surface, x, y):
+        # Calcular altura basada en el texto
+        lines = self.wrap_text(self.text, self.width - 40)
+        self.height = len(lines) * 25 + 30
 
-    def _strip_html(self, html_content):
-        """Converts HTML to plain text for the bubble (removes tags, keeps code blocks)."""
-        # markdown2 returns html,
-        # for simplicity, we remove tags except code blocks.
-        import re
-        # Replace <code>...</code> with ```...```
-        html_content = re.sub(r"<code>(.+?)</code>", r"```\1```", html_content, flags=re.DOTALL)
-        # Remove other tags
-        html_content = re.sub(r"<[^>]+>", "", html_content)
-        # Replace HTML entities
-        html_content = html_content.replace("&nbsp;", " ").replace("&amp;", "&")
-        return html_content
+        # Actualizar animación
+        if self.animation_progress < 1:
+            self.animation_progress += 0.05
+            self.alpha = int(255 * self.animation_progress)
 
-    def _get_gabo_response(self, user_text):
-        try:
-            payload = {
-                "model": MODEL,
-                "messages": [{"role": "user", "content": user_text}],
+        # Crear superficie para el mensaje con alpha
+        msg_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+
+        # Dibujar fondo del mensaje
+        color = USER_MSG if self.is_user else AI_MSG
+        pygame.draw.rect(msg_surface, (*color, self.alpha), (0, 0, self.width, self.height), border_radius=15)
+
+        # Dibujar texto
+        for i, line in enumerate(lines):
+            text_surf = font_medium.render(line, True, (*TEXT, self.alpha))
+            msg_surface.blit(text_surf, (20, 15 + i * 25))
+
+        # Dibujar sombra
+        shadow = pygame.Surface((self.width + 6, self.height + 6), pygame.SRCALPHA)
+        shadow.fill((0, 0, 0, 30))
+        surface.blit(shadow, (x - 3, y - 3))
+
+        # Dibujar mensaje
+        surface.blit(msg_surface, (x, y))
+
+        # Dibujar indicador de usuario/ai
+        indicator = "Tú" if self.is_user else current_model["name"]
+        indicator_surf = font_small.render(indicator, True, (*TEXT, self.alpha//2))
+        surface.blit(indicator_surf, (x + 20, y + self.height + 5))
+
+        return self.height
+
+    def wrap_text(self, text, max_width):
+        words = text.split()
+        lines = []
+        current_line = []
+
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            test_width = font_medium.size(test_line)[0]
+
+            if test_width <= max_width:
+                current_line.append(word)
+            else:
+                lines.append(' '.join(current_line))
+                current_line = [word]
+
+        if current_line:
+            lines.append(' '.join(current_line))
+
+        return lines
+
+class Particle:
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+        self.size = random.randint(2, 5)
+        self.speed_x = random.uniform(-1, 1)
+        self.speed_y = random.uniform(-2, 0)
+        self.lifetime = random.randint(20, 40)
+
+    def update(self):
+        self.x += self.speed_x
+        self.y += self.speed_y
+        self.lifetime -= 1
+        self.size *= 0.95
+        return self.lifetime > 0
+
+    def draw(self, surface):
+        alpha = min(255, self.lifetime * 6)
+        pygame.draw.circle(surface, (*self.color, alpha), (int(self.x), int(self.y)), int(self.size))
+
+# Funciones de utilidad
+def draw_rounded_rect(surface, rect, color, radius=10):
+    """Dibuja un rectángulo con bordes redondeados"""
+    pygame.draw.rect(surface, color, rect, border_radius=radius)
+
+def create_particles(x, y, color, count=10):
+    """Crea partículas en una posición específica"""
+    for _ in range(count):
+        app_state.particles.append(Particle(x, y, color))
+
+def send_message_to_gemini(message):
+    """Envía un mensaje a la API de Gemini"""
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{current_model['model']}:generateContent"
+        params = {"key": API_KEY}
+
+        headers = {"Content-Type": "application/json"}
+
+        data = {
+            "contents": [{
+                "parts": [{"text": message}]
+            }],
+            "generationConfig": {
+                "temperature": 0.7
             }
-            headers = {
-                "Authorization": f"Bearer {API_KEY}",
-                "Content-Type": "application/json"
-            }
-            resp = requests.post(API_URL, json=payload, headers=headers, timeout=30)
-            resp.raise_for_status()
-            data = resp.json()
-            respuesta = data["choices"][0]["message"]["content"]
-            # Reemplaza DeepSeek por Gabo automáticamente
-            respuesta = respuesta.replace("DeepSeek", "Gabo")
-            # Muestra la respuesta, procesando markdown y código
-            self._add_bubble(respuesta, "gabo", markdown=True)
-        except Exception as e:
-            self._add_bubble("No se pudo entregar el mensaje.\n" + str(e), "gabo")
-        finally:
-            self.send_btn.configure(state="normal", text="Enviar")
+        }
 
-if __name__ == "__main__":
-    app = GaboAIApp()
-    app.mainloop()
+        response = requests.post(url, params=params, headers=headers, json=data)
+        response.raise_for_status()
+
+        result = response.json()
+        if "candidates" in result and result["candidates"]:
+            text = result["candidates"][0]["content"]["parts"][0]["text"]
+            return text.replace("Gemini", "Gabo AI").replace("gemini", "Gabo AI")
+        else:
+            return "Lo siento, no pude generar una respuesta. Por favor intenta nuevamente."
+
+    except Exception as e:
+        return f"Error al conectar con Gabo AI: {str(e)}"
+
+def add_message(text, is_user=False):
+    """Añade un mensaje a la conversación"""
+    app_state.messages.append(Message(text, is_user))
+    # Crear partículas para el efecto
+    if is_user:
+        create_particles(WIDTH - 220, HEIGHT - 150, PRIMARY, 15)
+    else:
+        create_particles(220, HEIGHT - 150, SECONDARY, 15)
+
+    # Calcular scroll máximo
+    total_height = sum(msg.height + 20 for msg in app_state.messages)
+    app_state.max_scroll = max(0, total_height - (HEIGHT - 200))
+
+# Inicializar elementos de UI
+input_box = InputBox(220, HEIGHT - 80, WIDTH - 440, 40)
+send_button = Button(WIDTH - 200, HEIGHT - 80, 80, 40, "Enviar", PRIMARY, PRIMARY_LIGHT)
+
+# Añadir mensaje de bienvenida
+add_message("¡Hola! Soy Gabo AI, tu asistente de inteligencia artificial. ¿En qué puedo ayudarte hoy?")
+
+# Bucle principal
+clock = pygame.time.Clock()
+running = True
+
+while running:
+    mouse_pos = pygame.mouse.get_pos()
+
+    # Manejar eventos
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        # Manejar entrada de texto
+        result = input_box.handle_event(event)
+        if result:
+            add_message(result, True)
+            input_box.text = ""
+            app_state.typing_indicator = True
+            app_state.typing_progress = 0
+
+        # Manejar botón de enviar
+        if send_button.handle_event(event):
+            if input_box.text:
+                add_message(input_box.text, True)
+                input_box.text = ""
+                app_state.typing_indicator = True
+                app_state.typing_progress = 0
+
+        # Manejar scroll
+        if event.type == pygame.MOUSEWHEEL:
+            app_state.scroll_offset = max(0, min(app_state.max_scroll, app_state.scroll_offset - event.y * 30))
+
+    # Actualizar elementos
+    input_box.update()
+    send_button.update(mouse_pos)
+
+    # Actualizar partículas
+    app_state.particles = [p for p in app_state.particles if p.update()]
+
+    # Simular typing indicator
+    if app_state.typing_indicator:
+        app_state.typing_progress += 1
+        if app_state.typing_progress > 60:  # Simular tiempo de respuesta
+            app_state.typing_indicator = False
+            response = send_message_to_gemini(app_state.messages[-1].text)
+            add_message(response)
+
+    # Dibujar interfaz
+    screen.fill(BACKGROUND)
+
+    # Dibujar sidebar
+    sidebar_width = 200 if app_state.sidebar_visible else 0
+    pygame.draw.rect(screen, SIDEBAR_BG, (0, 0, sidebar_width, HEIGHT))
+
+    # Dibujar logo
+    logo_text = font_title.render("Gabo AI", True, WHITE)
+    screen.blit(logo_text, (sidebar_width//2 - logo_text.get_width()//2, 30))
+
+    # Dibujar botones de modelo
+    model_y = 100
+    for model_id, model in MODELS.items():
+        model_color = PRIMARY_LIGHT if model_id == current_model else SIDEBAR_BG
+        model_rect = pygame.Rect(20, model_y, sidebar_width - 40, 50)
+        pygame.draw.rect(screen, model_color, model_rect, border_radius=8)
+
+        model_text = font_medium.render(model["name"], True, WHITE)
+        screen.blit(model_text, (sidebar_width//2 - model_text.get_width()//2, model_y + 15))
+
+        model_y += 70
+
+    # Dibujar área de chat
+    pygame.draw.rect(screen, WHITE, (sidebar_width, 0, WIDTH - sidebar_width, HEIGHT - 100))
+
+    # Dibujar mensajes
+    y_pos = 20 - app_state.scroll_offset
+    for message in app_state.messages:
+        x_pos = WIDTH - message.width - 40 if message.is_user else sidebar_width + 40
+        height = message.draw(screen, x_pos, y_pos)
+        y_pos += height + 20
+
+    # Dibujar typing indicator
+    if app_state.typing_indicator:
+        indicator_x = sidebar_width + 60
+        indicator_y = HEIGHT - 130
+        for i in range(3):
+            alpha = 100 + (155 * (abs((app_state.typing_progress // 5 + i) % 6 - 3) / 3))
+            pygame.draw.circle(screen, (100, 100, 100, alpha),
+                              (indicator_x + i * 20, indicator_y),
+                              5)
+
+    # Dibujar área de entrada
+    pygame.draw.rect(screen, (230, 230, 235), (sidebar_width, HEIGHT - 100, WIDTH - sidebar_width, 100))
+    input_box.rect.x = sidebar_width + 40
+    input_box.draw(screen)
+
+    # Dibujar botón de enviar
+    send_button.rect.x = WIDTH - 200
+    send_button.draw(screen)
+
+    # Dibujar partículas
+    for particle in app_state.particles:
+        particle.draw(screen)
+
+    # Actualizar pantalla
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+sys.exit()
