@@ -10,8 +10,8 @@ from PIL import Image, ImageTk
 import sys
 
 # Configuración de la API
-API_KEY = "AIzaSyDD8X1GvPm6j3axGaWz-pmjKSQXdP8eci4"
-MODEL = "gemini-2.0-flash"
+API_KEY = ""
+MODEL = ""
 
 # Configurar apariencia de CustomTkinter
 ctk.set_appearance_mode("Dark")
@@ -123,7 +123,7 @@ class GaboAIApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Gabo AI - Sala de Chat")
+        self.title("INTELIGENCIA-ARTIFICIAL - Sala de Chat")
         self.geometry("1000x700")
         self.minsize(800, 600)
 
@@ -136,7 +136,7 @@ class GaboAIApp(ctk.CTk):
         self.setup_ui()
 
         # Mensaje de bienvenida
-        self.add_message("¡Hola! Soy Gabo AI, tu asistente de inteligencia artificial. ¿En qué puedo ayudarte hoy?", False)
+        self.add_message("¡Hola! Soy INTELIGENCIA-ARTIFIAL, tu asistente de inteligencia artificial. ¿En qué puedo ayudarte hoy?", False)
 
     def setup_ui(self):
         # Configurar grid
@@ -151,7 +151,7 @@ class GaboAIApp(ctk.CTk):
         # Título
         title_label = ctk.CTkLabel(
             top_frame,
-            text="Gabo AI - Sala de Chat",
+            text="INTELIGENCIA-ARTIFICIAL - Sala de Chat",
             font=ctk.CTkFont(size=20, weight="bold")
         )
         title_label.pack(side="left", padx=20, pady=10)
@@ -235,7 +235,7 @@ class GaboAIApp(ctk.CTk):
 
         user_label = ctk.CTkLabel(
             header_frame,
-            text="Tú" if is_user else "Gabo AI",
+            text="Tú" if is_user else "INTELIGENCIA-ARTIFICIAL",
             font=ctk.CTkFont(weight="bold"),
             text_color=fg_color
         )
@@ -381,7 +381,7 @@ class GaboAIApp(ctk.CTk):
             result = response.json()
             if "candidates" in result and result["candidates"]:
                 response_text = result["candidates"][0]["content"]["parts"][0]["text"]
-                response_text = response_text.replace("Google", "Influent").replace("Gemini", "Gabo AI")
+                response_text = response_text.replace("Google", "Influent").replace("Gemini", "INTELIGENCIA-ARTIFICIAL")
             else:
                 response_text = "Lo siento, no pude generar una respuesta."
 
